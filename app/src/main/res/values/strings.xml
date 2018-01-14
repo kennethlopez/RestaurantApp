@@ -27,6 +27,4 @@
     <string name="connection_error_message">Please check your internet connection or try again later</string>
     <string name="info_text">Info</string>
     <string name="sorry_text">Sorry</string>
-
-    <string name="geo_api_key">YOUR_API_KEY</string>
 </resources>

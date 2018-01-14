@@ -52,13 +52,14 @@ public class RestaurantListAdapter extends RecyclerView.Adapter<RestaurantListAd
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         PlaceResponse place = mList.get(position);
+        String key = AppUtil.getGoogleApiKey(holder.getContext());
 
         if (place.getPhotos() != null && place.getPhotos().size() != 0) {
             int maxWidth = AppUtil.dpToPx(50);
             int height = AppUtil.dpToPx(50);
 
             PhotoResponse photo = place.getPhotos().get(0);
-            String url = AppUtil.getGooglePhotosLink(photo.getPhotoReference(), maxWidth, height);
+            String url = AppUtil.getGooglePhotosLink(photo.getPhotoReference(), maxWidth, height, key);
             holder.setImage(url);
         } else holder.setImage(R.drawable.ic_restaurant_menu_black_24dp);
 
@@ -95,6 +96,10 @@ public class RestaurantListAdapter extends RecyclerView.Adapter<RestaurantListAd
             mRatingText.setText("");
             mTastesContainer.removeAllViews();
             mAddress.setText("");
+        }
+
+        public Context getContext() {
+            return mContext;
         }
 
         public void setImage(String string) {

@@ -47,10 +47,12 @@ public class NearbyPresenter extends BasePresenter<NearbyContract.View> implemen
     private String mPreviousNextPageToken;
     private String mCurrentNextPageToken;
     private int mNearbyRadius;
+    private String mApiKey;
     private int[] mNearbyRadiusOptions = Constants.AppConstants.NEARBY_RADIUS_OPTIONS;
 
     @Inject
-    public NearbyPresenter(RestaurantRepository repository, SharedPrefDataSource sharedPref, RxBus bus) {
+    public NearbyPresenter(RestaurantRepository repository, SharedPrefDataSource sharedPref,
+                           RxBus bus) {
         mRestaurantRepository = repository;
         mSharedPref = sharedPref;
         mBus = bus;
@@ -62,6 +64,7 @@ public class NearbyPresenter extends BasePresenter<NearbyContract.View> implemen
         String locationAddress = mSharedPref.getLocationAddress();
 
         mLocationService = view.getLocationService();
+        mApiKey = view.getApiKey(R.string.google_api_key);
         mCurrentLocation = mSharedPref.getCurrentLocation();
         mNearbyRadius = mSharedPref.getNearbyRadius();
 
@@ -143,7 +146,7 @@ public class NearbyPresenter extends BasePresenter<NearbyContract.View> implemen
         int radius = AppUtil.kmToMeters(mNearbyRadius);
         String location = mCurrentLocation.getLat() + "," + mCurrentLocation.getLng();
         String type = Constants.AppConstants.PLACE_TYPE_RESTAURANT;
-        String key = Constants.AppConstants.GOOGLE_API_KEY;
+        String key = mApiKey;
 
         showProgressBar();
         mDisposable = mRestaurantRepository.nearbySearch(location, radius, type, key)
@@ -161,7 +164,7 @@ public class NearbyPresenter extends BasePresenter<NearbyContract.View> implemen
         int radius = AppUtil.kmToMeters(mNearbyRadius);
         String location = mCurrentLocation.getLat() + "," + mCurrentLocation.getLng();
         String type = Constants.AppConstants.PLACE_TYPE_RESTAURANT;
-        String key = Constants.AppConstants.GOOGLE_API_KEY;
+        String key = mApiKey;
 
         showProgressBar();
         mDisposable = mRestaurantRepository.nearBySearchWithToken(location, radius, type, key,
@@ -179,7 +182,7 @@ public class NearbyPresenter extends BasePresenter<NearbyContract.View> implemen
 
     private void processNearbyResponse(PlacesNearbyResponse placesNearbyResponse, int position) {
         mCurrentNextPageToken = placesNearbyResponse.getNextPageToken();
-        if (getView() != null) {
+        if (isViewAttached()) {
             getView().updateRecyclerView(mPlaces);
             getView().scrollToPosition(position);
             hideProgressBars();
@@ -214,14 +217,14 @@ public class NearbyPresenter extends BasePresenter<NearbyContract.View> implemen
 
     private void showProgressBar() {
         // show small progress bar if already displayed data
-        if (getView() != null) {
+        if (isViewAttached()) {
             if (mPlaces.size() > 0) getView().showSmallProgressBar();
             else getView().showProgressBar();
         }
     }
 
     private void hideProgressBars() {
-        if (getView() != null) {
+        if (isViewAttached()) {
             getView().hideProgressBar();
             getView().hideSmallProgressBar();
         }

@@ -12,8 +12,6 @@ public interface Constants {
 
         // google place types
         String PLACE_TYPE_RESTAURANT = "restaurant";
-
-        String GOOGLE_API_KEY = "YOUR_API_KEY";
     }
 
     interface NetworkConstants {

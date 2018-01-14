@@ -199,6 +199,11 @@ public class NearbyFragment extends BaseFragment implements NearbyContract.View 
     }
 
     @Override
+    public String getApiKey(int resId) {
+        return getResources().getString(resId);
+    }
+
+    @Override
     public void scrollToPosition(int position) {
         mLayoutManager.scrollToPosition(position);
     }

@@ -20,6 +20,8 @@ public interface NearbyContract {
 
         LocationService getLocationService();
 
+        String getApiKey(int resId);
+
         void scrollToPosition(int position);
 
         void onResolvableApiException(ResolvableApiException resolvable);
