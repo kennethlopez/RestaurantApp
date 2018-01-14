@@ -1,0 +1,32 @@
+<resources>
+    <string-array name="bottom_nav_toolbar_titles">
+        <item>Nearby</item>
+        <item>Tastes</item>
+        <item>Favorites</item>
+        <item>Map</item>
+    </string-array>
+
+    <string-array name="array_nearby_radius">
+        <item>1 km from location</item>
+        <item>3 km from location</item>
+        <item>5 km from location</item>
+        <item>10 km from location</item>
+        <item>15 km from location</item>
+        <item>25 km from location</item>
+    </string-array>
+
+    <string name="app_name">Restaurant App</string>
+    <string name="search_text">Search</string>
+    <string name="ok_text">OK</string>
+    <string name="nearby_text">Nearby</string>
+    <string name="favorite_text">Favorites</string>
+    <string name="tastes_text">Tastes</string>
+    <string name="map_text">Map</string>
+    <string name="search_restaurants_text">Search Restaurants</string>
+    <string name="reviews_text">Reviews</string>
+    <string name="connection_error_message">Please check your internet connection or try again later</string>
+    <string name="info_text">Info</string>
+    <string name="sorry_text">Sorry</string>
+
+    <string name="geo_api_key">YOUR_API_KEY</string>
+</resources>

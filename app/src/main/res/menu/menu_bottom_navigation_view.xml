@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/menu_bottom_nav_find_place"
+            android:icon="@drawable/ic_search_black_24dp"
+            android:title="@string/nearby_text"/>
+        <item
+            android:id="@+id/menu_bottom_nav_tastes"
+            android:icon="@drawable/ic_restaurant_menu_black_24dp"
+            android:title="@string/tastes_text"/>
+        <item
+            android:id="@+id/menu_bottom_nav_favorites"
+            android:icon="@drawable/ic_favorite_black_24dp"
+            android:title="@string/favorite_text" />
+        <item
+            android:id="@+id/menu_bottom_nav_map"
+            android:icon="@drawable/ic_place_black_24dp"
+            android:title="@string/map_text"/>
+    </group>
+</menu>
