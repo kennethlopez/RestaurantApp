@@ -3,21 +3,17 @@ package com.restaurantapp.test.common.injection.module;
 
 import android.app.Application;
 import android.content.Context;
-import android.content.SharedPreferences;
 
-import com.google.gson.Gson;
 import com.restaurantapp.data.api.PlacesApiService;
-import com.restaurantapp.util.RxBus;
+import com.restaurantapp.injection.ApplicationContext;
+import com.restaurantapp.util.LocationService;
 
 
 import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
-import okhttp3.Cache;
 import okhttp3.OkHttpClient;
-import okhttp3.logging.HttpLoggingInterceptor;
-import retrofit2.Retrofit;
 
 import static org.mockito.Mockito.mock;
 
@@ -40,58 +36,28 @@ public class AppTestModule {
     }
 
     @Provides
-    @Singleton
+    @ApplicationContext
     Context provideContext() {
-        return mApplication.getApplicationContext();
+        return mApplication;
     }
 
     /************* MOCKS *************/
 
     @Provides
     @Singleton
-    SharedPreferences provideSharedPreferences(@SuppressWarnings("unused") Context context) {
-        return mock(SharedPreferences.class);
+    OkHttpClient.Builder provideOkHttpClientBuilder() {
+        return mock(OkHttpClient.Builder.class);
     }
 
     @Provides
     @Singleton
-    Gson provideGson() {
-        return mock(Gson.class);
-    }
-
-    @Provides
-    @Singleton
-    HttpLoggingInterceptor provideHttpLoggingInterceptor() {
-        return mock(HttpLoggingInterceptor.class);
-    }
-
-    @Provides
-    @Singleton
-    Cache provideCache() {
-        return mock(Cache.class);
-    }
-
-    @Provides
-    @Singleton
-    OkHttpClient provideOkHttpClient() {
-        return mock(OkHttpClient.class);
-    }
-
-    @Provides
-    @Singleton
-    Retrofit provideRetrofit() {
-        return mock(Retrofit.class);
-    }
-
-    @Provides
-    @Singleton
-    PlacesApiService provideApiService() {
+    PlacesApiService providePlacesApiService() {
         return mock(PlacesApiService.class);
     }
 
     @Provides
     @Singleton
-    RxBus provideRxBus() {
-        return mock(RxBus.class);
+    LocationService provideLocationService() {
+        return mock(LocationService.class);
     }
 }

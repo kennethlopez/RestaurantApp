@@ -15,7 +15,7 @@ public class PlaceNearby implements Fields {
     @Expose
     private List<Restaurant> results;
 
-    @SerializedName("status")
+    @SerializedName(STATUS)
     @Expose
     private String status;
 

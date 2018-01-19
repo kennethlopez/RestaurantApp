@@ -4,8 +4,9 @@ import android.arch.persistence.room.Room;
 import android.content.Context;
 
 import com.restaurantapp.data.AppDatabase;
-import com.restaurantapp.data.repository.RestaurantRepository;
 
+
+import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
@@ -22,17 +23,26 @@ public class RoomTestModule {
     }
 
     @Provides
+    @Singleton
     AppDatabase providesRoomDatabase() {
         return mAppDatabase;
     }
 
     @Provides
+    @Singleton
     AppDatabase.RestaurantDao providesRestaurantDao() {
         return mAppDatabase.restaurantDao();
     }
 
     @Provides
-    RestaurantRepository providesRestaurantRepository(AppDatabase.RestaurantDao restaurantDao) {
-        return new RestaurantRepository(restaurantDao);
+    @Singleton
+    AppDatabase.ReviewDao providesReviewDao() {
+        return mAppDatabase.reviewDao();
+    }
+
+    @Provides
+    @Singleton
+    AppDatabase.PhotoDao providesPhotoDao() {
+        return mAppDatabase.photoDao();
     }
 }

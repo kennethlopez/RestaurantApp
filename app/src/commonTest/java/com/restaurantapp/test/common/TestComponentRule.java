@@ -4,7 +4,6 @@ package com.restaurantapp.test.common;
 import android.content.Context;
 
 import com.restaurantapp.App;
-import com.restaurantapp.injection.component.AppComponent;
 import com.restaurantapp.test.common.injection.component.DaggerTestComponent;
 import com.restaurantapp.test.common.injection.component.TestComponent;
 import com.restaurantapp.test.common.injection.module.AppTestModule;
@@ -39,10 +38,6 @@ public class TestComponentRule implements TestRule {
 
     public Context getContext() {
         return mContext;
-    }
-
-    public AppComponent getAppComponent() {
-        return App.get(mContext).getAppComponent();
     }
 
     @Override
