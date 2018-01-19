@@ -1,8 +1,8 @@
 package com.restaurantapp.data.event;
 
 
-public class EventBottomScrollRecyclerView {
-    private int position;
+public final class EventBottomScrollRecyclerView {
+    private final int position;
 
     public EventBottomScrollRecyclerView(int position) {
         this.position = position;

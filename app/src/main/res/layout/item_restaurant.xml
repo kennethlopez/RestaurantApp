@@ -4,20 +4,26 @@
     android:layout_height="wrap_content"
     android:orientation="horizontal"
     android:background="?android:attr/selectableItemBackground"
-    android:paddingTop="10dp"
-    android:paddingBottom="10dp">
-    <FrameLayout
+    android:paddingTop="8dp"
+    android:paddingBottom="8dp">
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
         android:background="@drawable/border_pale_gray"
+        android:orientation="vertical"
         android:padding="1dp">
+        <android.support.v4.widget.ContentLoadingProgressBar
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:indeterminate="true"/>
         <ImageView
             android:id="@+id/item_restaurant_image"
             android:layout_width="50dp"
             android:layout_height="50dp"
+            android:scaleType="fitXY"
             android:contentDescription="@null" />
-    </FrameLayout>
+    </LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -53,11 +59,18 @@
                 android:layout_marginStart="5dp"
                 android:text="355 Reviews"/>
         </LinearLayout>
+        <android.support.v7.widget.AppCompatTextView
+            android:id="@+id/item_restaurant_number"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
+            android:text="(032) 264 5391"/>
         <LinearLayout
             android:id="@+id/item_restaurant_tastes_container"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:visibility="gone">
             <android.support.v7.widget.AppCompatTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

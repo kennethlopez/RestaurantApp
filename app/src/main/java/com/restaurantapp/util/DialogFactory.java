@@ -3,7 +3,7 @@ package com.restaurantapp.util;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.support.annotation.StringRes;
+import android.content.DialogInterface;
 import android.support.v7.app.AlertDialog;
 
 import com.restaurantapp.R;
@@ -19,24 +19,25 @@ public final class DialogFactory {
         return alertDialog.create();
     }
 
-    public static Dialog createSimpleOkErrorDialog(Context context, @StringRes int titleResId,
-                                                   @StringRes int messageResId) {
+    public static Dialog createSimpleOkErrorDialog(Context context, int titleResId, int messageResId) {
         return createSimpleOkErrorDialog(context,
                 context.getString(titleResId),
                 context.getString(messageResId));
     }
 
-    public static Dialog createGenericErrorDialog(Context context, String message) {
+    public static Dialog createGenericErrorDialog(Context context, String message,
+                                                  DialogInterface.OnClickListener clickListener) {
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(context)
                 .setTitle(context.getString(R.string.sorry_text))
                 .setMessage(message)
-                .setNeutralButton(R.string.ok_text, null);
+                .setNeutralButton(R.string.ok_text, clickListener)
+                .setCancelable(false);
         return alertDialog.create();
     }
 
-    public static Dialog createGenericErrorDialog(Context context,
-                                                  @StringRes int messageResId) {
-        return createGenericErrorDialog(context, context.getString(messageResId));
+    public static Dialog createGenericErrorDialog(Context context, int messageResId,
+                                                  DialogInterface.OnClickListener clickListener) {
+        return createGenericErrorDialog(context, context.getString(messageResId), clickListener);
     }
 
     public static ProgressDialog createProgressDialog(Context context, String message) {

@@ -6,14 +6,14 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.BottomNavigationView;
 import android.support.design.widget.CoordinatorLayout;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
 
 import com.restaurantapp.R;
 import com.restaurantapp.ui.base.BaseActivity;
 import com.restaurantapp.data.event.EventTurnOnLocation;
+import com.restaurantapp.util.AppUtil;
 import com.restaurantapp.util.RxBus;
 import com.restaurantapp.ui.home.fragment.favorites.FavoritesFragment;
 import com.restaurantapp.ui.home.fragment.nearby.NearbyFragment;
@@ -27,6 +27,8 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public class HomeActivity extends BaseActivity implements HomeContract.View {
+    public static final int REQUEST_TURN_ON_LOCATION = 102;
+
     @Inject RxBus mBus;
     @Inject HomePresenter mPresenter;
 
@@ -36,17 +38,17 @@ public class HomeActivity extends BaseActivity implements HomeContract.View {
     private MapFragment mMapFragment;
 
     private Handler mHandler = new Handler();
+    private FragmentManager mFragmentManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-    }
+        setContentView(R.layout.activity_home);
 
-    @Override
-    public void attachView() {
         getComponent().inject(this);
         ButterKnife.bind(this);
+
+        mFragmentManager = getSupportFragmentManager();
 
         mPresenter.attachView(this);
         super.attachPresenter(mPresenter);
@@ -56,9 +58,9 @@ public class HomeActivity extends BaseActivity implements HomeContract.View {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         switch (requestCode) {
-            // intent is called in FindPlaceFragment
+            // intent is called in NearbyFragment or MapFragment
             // EventTurnOnLocation is handled in FindPlacePresenter
-            case NearbyFragment.REQUEST_TURN_ON_LOCATION:
+            case REQUEST_TURN_ON_LOCATION:
                 mBus.post(new EventTurnOnLocation(resultCode == RESULT_OK));
                 break;
         }
@@ -81,7 +83,7 @@ public class HomeActivity extends BaseActivity implements HomeContract.View {
     }
 
     @Override
-    public void setToolbarTitle(String title) {
+    public void setActionBarTitle(String title) {
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setTitle(title);
@@ -89,62 +91,35 @@ public class HomeActivity extends BaseActivity implements HomeContract.View {
     }
 
     @Override
-    public String[] getToolbarTitles(int resId) {
-        return getResources().getStringArray(resId);
-    }
-
-    @Override
-    public void loadFindPlaceFragment(int fragmentId, String tag) {
-        if (mNearbyFragment == null) {
+    public void loadNearbyFragment(int fragmentId, String tag) {
+        if (mNearbyFragment == null)
             mNearbyFragment = NearbyFragment.newInstance();
-        }
-
-        loadFragment(fragmentId, mNearbyFragment, tag);
+        AppUtil.loadFragmentFadeIn(fragmentId, mHandler, mFragmentManager, mNearbyFragment, tag);
+        mBottomNav.setSelectedItemId(R.id.menu_bottom_nav_nearby);
     }
 
     @Override
     public void loadTastesFragment(int fragmentId, String tag) {
-        if (mTastesFragment == null) {
-            mTastesFragment = TastesFragment.newInstance();
-        }
-
-        loadFragment(fragmentId, mTastesFragment, tag);
+        if (mTastesFragment == null) mTastesFragment = TastesFragment.newInstance();
+        AppUtil.loadFragmentFadeIn(fragmentId, mHandler, mFragmentManager, mTastesFragment, tag);
+        mBottomNav.setSelectedItemId(R.id.menu_bottom_nav_tastes);
     }
 
     @Override
     public void loadFavoritesFragment(int fragmentId, String tag) {
-        if (mFavoritesFragment == null) {
-            mFavoritesFragment = FavoritesFragment.newInstance();
-        }
-
-        loadFragment(fragmentId, mFavoritesFragment, tag);
+        if (mFavoritesFragment == null) mFavoritesFragment = FavoritesFragment.newInstance();
+        AppUtil.loadFragmentFadeIn(fragmentId, mHandler, mFragmentManager, mFavoritesFragment, tag);
+        mBottomNav.setSelectedItemId(R.id.menu_bottom_nav_favorites);
     }
 
     @Override
     public void loadMapFragment(int fragmentId, String tag) {
-        if (mMapFragment == null) {
-            mMapFragment = MapFragment.newInstance();
-        }
+        if (mMapFragment == null) mMapFragment = MapFragment.newInstance();
 
-        loadFragment(fragmentId, mMapFragment, tag);
-    }
-
-    private void loadFragment(final int fragmentId, final Fragment fragment, final String tag) {
-
-        // Sometimes, when fragment has huge data, screen seems hanging
-        // when switching between navigation menus
-        // So using runnable, the fragment is loaded with cross fade effect
-        // This effect can be seen in GMail app
-        Runnable runnable = () -> {
-            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-            transaction.setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out);
-            transaction.replace(fragmentId, fragment, tag);
-            transaction.commitAllowingStateLoss();
-        };
-
-        mHandler.post(runnable);
+        AppUtil.loadFragmentFadeIn(fragmentId, mHandler, mFragmentManager, mMapFragment, tag);
+        mBottomNav.setSelectedItemId(R.id.menu_bottom_nav_map);
     }
 
     @BindView(R.id.app_bar_toolbar) Toolbar mToolbar;
-    @BindView(R.id.activity_main_bottom_nav) BottomNavigationView mBottomNav;
+    @BindView(R.id.activity_home_bottom_nav) BottomNavigationView mBottomNav;
 }

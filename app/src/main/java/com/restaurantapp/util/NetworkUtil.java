@@ -6,6 +6,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
 
+import java.net.ConnectException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 
@@ -26,7 +27,8 @@ public final class NetworkUtil {
      * */
     public static boolean isConnectionError(Throwable throwable) {
         return throwable instanceof UnknownHostException ||
-                throwable instanceof SocketTimeoutException;
+                throwable instanceof SocketTimeoutException ||
+                throwable instanceof ConnectException;
     }
 
     public static boolean isNetworkConnected(final Context context) {

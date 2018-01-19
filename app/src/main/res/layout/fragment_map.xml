@@ -1,11 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
-    <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:src="@drawable/ic_place_black_24dp"
-        android:contentDescription="@null" />
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.home.HomeActivity"
+    android:id="@+id/fragment_map_parent_container">
+    <include layout="@layout/select_radius_spinner"
+        android:id="@+id/fragment_map_select_radius_spinner"/>
+    <com.google.android.gms.maps.MapView
+        android:id="@+id/fragment_map_map_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/fragment_map_select_radius_spinner"/>
 </RelativeLayout>

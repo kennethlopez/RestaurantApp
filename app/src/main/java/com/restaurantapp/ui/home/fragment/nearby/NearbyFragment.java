@@ -5,7 +5,9 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatSpinner;
@@ -22,7 +24,6 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
 
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
@@ -30,14 +31,13 @@ import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlacePicker;
 import com.restaurantapp.R;
+import com.restaurantapp.data.api.response.Restaurant;
 import com.restaurantapp.ui.base.BaseFragment;
-import com.restaurantapp.data.api.response.PlaceResponse;
+import com.restaurantapp.ui.home.HomeActivity;
+import com.restaurantapp.ui.restaurant.detail.RestaurantDetailsActivity;
 import com.restaurantapp.util.LocationService;
-import com.restaurantapp.ui.adapter.RestaurantListAdapter;
 import com.restaurantapp.ui.helper.RecyclerTouchListener;
-import com.restaurantapp.util.RxBus;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -47,14 +47,10 @@ import butterknife.ButterKnife;
 
 
 public class NearbyFragment extends BaseFragment implements NearbyContract.View {
-    private static final int PLACE_PICKER_REQUEST = 101;
-    public static final int REQUEST_TURN_ON_LOCATION = 102;
 
     @Inject NearbyPresenter mPresenter;
-    @Inject RxBus mBus;
-    @Inject LocationService mLocationService;
+    @Inject RestaurantListAdapter mAdapter;
 
-    private RestaurantListAdapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
 
     public static NearbyFragment newInstance() {
@@ -79,15 +75,13 @@ public class NearbyFragment extends BaseFragment implements NearbyContract.View 
         ButterKnife.bind(this, view);
         setHasOptionsMenu(true);
 
-        mAdapter = new RestaurantListAdapter(new ArrayList<>(), mBus);
-
         mPresenter.attachView(this);
         super.attachPresenter(mPresenter);
     }
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.menu_find_place_fragment, menu);
+        inflater.inflate(R.menu.menu_nearby_fragment, menu);
         super.onCreateOptionsMenu(menu, inflater);
     }
 
@@ -123,13 +117,21 @@ public class NearbyFragment extends BaseFragment implements NearbyContract.View 
     }
 
     @Override
+    public void gotoRestaurantsDetails(Restaurant restaurantResponse) {
+        Bundle args = RestaurantDetailsActivity.createExtras(restaurantResponse);
+        Intent intent = new Intent(getActivity(), RestaurantDetailsActivity.class);
+        intent.putExtras(args);
+        startActivity(intent);
+    }
+
+    @Override
     public void onResolvableApiException(ResolvableApiException resolvable) {
         // Location settings are not satisfied, but this can be fixed
         // by showing the user a dialog.
         try {
             // Show the dialog by calling startResolutionForResult(),
             // and check the result in onActivityResult().
-            resolvable.startResolutionForResult(getActivity(), REQUEST_TURN_ON_LOCATION);
+            resolvable.startResolutionForResult(getActivity(), HomeActivity.REQUEST_TURN_ON_LOCATION);
         } catch (IntentSender.SendIntentException sendEx) {
             // Ignore the error.
         }
@@ -142,13 +144,17 @@ public class NearbyFragment extends BaseFragment implements NearbyContract.View 
     }
 
     @Override
+    public void setActionBarTitle(int resId) {
+        setActionBarTitle(getResources().getString(resId));
+    }
+
+    @Override
     public void setSpinner(int textArrayResId, int position) {
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(getContext(),
                 textArrayResId, android.R.layout.simple_spinner_item);
 
         adapter.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);
         mSpinner.setAdapter(adapter);
-        mSpinner.setSelection(position);
         mSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int index, long l) {
@@ -160,11 +166,12 @@ public class NearbyFragment extends BaseFragment implements NearbyContract.View 
 
             }
         });
+        new Handler().postDelayed(() -> mSpinner.setSelection(position, true), 100);
     }
 
     @Override
-    public void initRecyclerView(List<PlaceResponse> places) {
-        mAdapter.setData(places);
+    public void initRecyclerView(List<Restaurant> restaurants) {
+        mAdapter.setData(restaurants);
         mLayoutManager = new LinearLayoutManager(getContext());
         mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
@@ -177,7 +184,7 @@ public class NearbyFragment extends BaseFragment implements NearbyContract.View 
                 new RecyclerTouchListener.ClickListener() {
                     @Override
                     public void onClick(View view, int position) {
-                        mPresenter.onRecyclerViewItemClick();
+                        mPresenter.onRecyclerViewItemClick(position);
                     }
 
                     @Override
@@ -188,19 +195,23 @@ public class NearbyFragment extends BaseFragment implements NearbyContract.View 
     }
 
     @Override
-    public void updateRecyclerView(List<PlaceResponse> places) {
+    public void setSwipeRefresh() {
+        mSwipeRefresh.setColorSchemeResources(R.color.colorPrimary,
+                R.color.colorAccent,
+                android.R.color.holo_orange_dark,
+                android.R.color.holo_blue_dark);
+        mSwipeRefresh.setOnRefreshListener(() -> mPresenter.onRefresh());
+    }
+
+    @Override
+    public void setRefreshing(boolean refreshing) {
+        mSwipeRefresh.setRefreshing(refreshing);
+    }
+
+    @Override
+    public void updateRecyclerView(List<Restaurant> places) {
         mAdapter.setData(places);
         mAdapter.notifyDataSetChanged();
-    }
-
-    @Override
-    public LocationService getLocationService() {
-        return mLocationService;
-    }
-
-    @Override
-    public String getApiKey(int resId) {
-        return getResources().getString(resId);
     }
 
     @Override
@@ -208,28 +219,7 @@ public class NearbyFragment extends BaseFragment implements NearbyContract.View 
         mLayoutManager.scrollToPosition(position);
     }
 
-    @Override
-    public void showProgressBar() {
-        mProgressBar.setVisibility(View.VISIBLE);
-    }
-
-    @Override
-    public void hideProgressBar() {
-        mProgressBar.setVisibility(View.GONE);
-    }
-
-    @Override
-    public void showSmallProgressBar() {
-        mSmallProgressBar.setVisibility(View.VISIBLE);
-    }
-
-    @Override
-    public void hideSmallProgressBar() {
-        mSmallProgressBar.setVisibility(View.GONE);
-    }
-
     @BindView(R.id.fragment_nearby_recycler_view) RecyclerView mRecyclerView;
-    @BindView(R.id.fragment_nearby_progressbar) ProgressBar mProgressBar;
-    @BindView(R.id.fragment_nearby_spinner) AppCompatSpinner mSpinner;
-    @BindView(R.id.fragment_nearby_progressbar_small) ProgressBar mSmallProgressBar;
+    @BindView(R.id.select_radius_spinner) AppCompatSpinner mSpinner;
+    @BindView(R.id.fragment_nearby_swipe_refresh) SwipeRefreshLayout mSwipeRefresh;
 }

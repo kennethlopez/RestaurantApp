@@ -13,6 +13,7 @@
         <item>10 km from location</item>
         <item>15 km from location</item>
         <item>25 km from location</item>
+        <item>50 km from location</item>
     </string-array>
 
     <string name="app_name">Restaurant App</string>
@@ -23,8 +24,19 @@
     <string name="tastes_text">Tastes</string>
     <string name="map_text">Map</string>
     <string name="search_restaurants_text">Search Restaurants</string>
-    <string name="reviews_text">Reviews</string>
-    <string name="connection_error_message">Please check your internet connection or try again later</string>
+    <string name="connection_error_message">Please check your internet connection</string>
     <string name="info_text">Info</string>
     <string name="sorry_text">Sorry</string>
+    <string name="photos_text">Photos</string>
+    <string name="reviews_text">Reviews</string>
+    <string name="show_on_map_text">Show on map</string>
+    <string name="over_query_limit_message">Exceeded query limit for today! Running on cached data, most images won\'t be loaded and some functions might not work properly.</string>
+    <string name="add_to_favorites_text">Add to favorites</string>
+    <string name="loading_restaurants_text">Loading Restaurants</string>
+    <string name="added_to_favorites_text">Added to favorites</string>
+    <string name="undo_text">Undo</string>
+    <string name="removed_to_favorites_text">Removed from favorites</string>
+    <string name="displayed_text">Displayed</string>
+    <string name="restaurants_text">restaurants</string>
+    <string name="dismiss_text">Dismiss</string>
 </resources>

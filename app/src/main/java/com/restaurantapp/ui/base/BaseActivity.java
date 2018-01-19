@@ -1,25 +1,36 @@
 package com.restaurantapp.ui.base;
 
 
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.util.LongSparseArray;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Menu;
 
 import com.restaurantapp.App;
-import com.restaurantapp.data.event.EventConnectionError;
+import com.restaurantapp.data.event.EventError;
 import com.restaurantapp.injection.component.ActivityComponent;
 import com.restaurantapp.injection.component.ConfigPersistentComponent;
 import com.restaurantapp.injection.component.DaggerConfigPersistentComponent;
 import com.restaurantapp.injection.module.ActivityModule;
+import com.restaurantapp.ui.home.HomePresenter;
+import com.restaurantapp.util.Constants;
 import com.restaurantapp.util.DialogFactory;
 import com.restaurantapp.util.RxBus;
+import com.restaurantapp.util.RxUtil;
+import com.restaurantapp.util.SharedPrefUtil;
 
 import java.util.concurrent.atomic.AtomicLong;
 
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 
-public abstract class BaseActivity extends AppCompatActivity {
+
+public abstract class BaseActivity extends AppCompatActivity implements Constants.ErrorTypes {
     private static final String TAG = "BaseActivity";
     private static final String KEY_ACTIVITY_ID = "KEY_ACTIVITY_ID";
     private static final AtomicLong NEXT_ID = new AtomicLong(0);
@@ -27,9 +38,14 @@ public abstract class BaseActivity extends AppCompatActivity {
             sComponentsMap = new LongSparseArray<>();
 
     private ActivityComponent mComponent;
+    private long mActivityId;
+
+    private Disposable mDisposable;
     private BasePresenter mPresenter;
     private RxBus mBus;
-    private long mActivityId;
+    private Dialog mDialog;
+    private SharedPrefUtil mSharedPrefUtil;
+    private boolean mDisplayedConnectionErrorDialog;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -49,9 +65,9 @@ public abstract class BaseActivity extends AppCompatActivity {
             sComponentsMap.put(mActivityId, configPersistentComponent);
         }
         mComponent = configPersistentComponent.activityComponent(new ActivityModule(this));
-
         mBus = mComponent.rxBus();
-        onConnectionErrorEvent();
+        mSharedPrefUtil = mComponent.sharedPrefUtil();
+        onErrorEvent();
     }
 
     @Override
@@ -60,7 +76,7 @@ public abstract class BaseActivity extends AppCompatActivity {
         outState.putLong(KEY_ACTIVITY_ID, mActivityId);
     }
 
-    public abstract void attachView();
+    public void attachView() {}
 
     protected void attachPresenter(BasePresenter presenter) {
         mPresenter = presenter;
@@ -71,55 +87,83 @@ public abstract class BaseActivity extends AppCompatActivity {
         super.onStart();
         attachView();
 
-        if (mPresenter != null) {
-            mPresenter.onStart();
-        }
+        if (mPresenter != null) mPresenter.onStart();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        if (mPresenter != null) {
-            mPresenter.onResume();
-        }
+        if (mPresenter != null) mPresenter.onResume();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        if (mPresenter != null) mPresenter.onCreateOptionsMenu();
+        return super.onCreateOptionsMenu(menu);
     }
 
     @Override
     protected void onPause() {
-        if (mPresenter != null) {
-            mPresenter.onPause();
-        }
+        if (mPresenter != null) mPresenter.onPause();
 
         super.onPause();
     }
 
     @Override
     protected void onStop() {
-        if (mPresenter != null) {
-            mPresenter.onStop();
-        }
+        if (mPresenter != null) mPresenter.onStop();
 
         super.onStop();
     }
 
     @Override
     protected void onDestroy() {
-        if (mPresenter != null) {
-            mPresenter.onDestroy();
-        }
+        if (mPresenter != null) mPresenter.onDestroy();
+
+        RxUtil.dispose(mDisposable);
 
         if (!isChangingConfigurations()) {
             Log.d(TAG, String.format("Clearing ConfigPersistentComponent id=%d", mActivityId));
             sComponentsMap.remove(mActivityId);
         }
+
+        if (mPresenter instanceof HomePresenter) {
+            mSharedPrefUtil.setDisplayedOverQueryLimitDialog(false);
+        }
+        mSharedPrefUtil.setDisplayedConnectionErrorDialog(false);
         super.onDestroy();
     }
 
-    private void onConnectionErrorEvent() {
-        mBus.filteredFlowable(EventConnectionError.class)
-                .subscribe(connectionErrorEvent ->
-                        DialogFactory.createGenericErrorDialog(this,
-                                connectionErrorEvent.getMessageResId()));
+    private void onErrorEvent() {
+        RxUtil.dispose(mDisposable);
+
+        mDisposable = mBus.filteredFlowable(EventError.class)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(eventError -> {
+                    if (mDialog == null || !mDialog.isShowing()) {
+                        switch (eventError.getErrorType()) {
+                            case ERROR_OVER_QUERY_LIMIT:
+                                if (!mSharedPrefUtil.displayedOverQueryLimitDialog()) {
+                                    showDialog(eventError.getMessageResId(), (dialogInterface, i) ->
+                                            mSharedPrefUtil.setDisplayedOverQueryLimitDialog(true));
+                                }
+                                break;
+                            case ERROR_CONNECTION:
+                                if (mSharedPrefUtil.displayedConnectionErrorDialog()) break;
+                                else mSharedPrefUtil.setDisplayedConnectionErrorDialog(true);
+                            default:
+                                showDialog(eventError.getMessageResId(),
+                                        (DialogInterface.OnClickListener) null);
+                                break;
+                        }
+                    }
+                });
+    }
+
+    private void showDialog(int res, DialogInterface.OnClickListener clickListener) {
+        mDialog = DialogFactory.createGenericErrorDialog(this, res, clickListener);
+        mDialog.show();
     }
 
     public ActivityComponent getComponent() {

@@ -2,7 +2,6 @@ package com.restaurantapp.injection.module;
 
 import android.app.Application;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.util.Log;
 
 import com.google.android.gms.location.LocationRequest;
@@ -60,41 +59,25 @@ public class AppModule {
 
     @Provides
     @Singleton
-    SharedPreferences provideSharedPreferences() {
-        return provideContext().getSharedPreferences(Constants.AppConstants.SHARED_PREFERENCES,
-                Context.MODE_PRIVATE);
-    }
-
-    @Provides
-    @Singleton
     Gson provideGson() {
-        return new GsonBuilder().create();
+        return new GsonBuilder()
+                .setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+                .create();
     }
 
     @Provides
     @Singleton
-    HttpLoggingInterceptor provideHttpLoggingInterceptor() {
+    OkHttpClient.Builder provideOkHttpClient(@ApplicationContext Context context) {
         HttpLoggingInterceptor interceptor =
                 new HttpLoggingInterceptor(message -> Log.d(TAG, message));
         interceptor.setLevel(BuildConfig.DEBUG ? HEADERS : NONE);
-        return interceptor;
-    }
 
-    @Provides
-    @Singleton
-    Cache provideCache() {
         Cache cache = null;
         try {
             cache = new Cache(new File(mApp.getCacheDir(), "http-cache"), 1024 * 1024 * 10); // 10mb
         } catch (Exception e) {
             Log.e(TAG, "Could not create cache!");
         }
-        return cache;
-    }
-
-    @Provides
-    @Singleton
-    OkHttpClient provideOkHttpClient() {
         return new OkHttpClient.Builder()
                 .addInterceptor(chain -> {  // cache
                     Response response = chain.proceed(chain.request());
@@ -108,7 +91,7 @@ public class AppModule {
                 })
                 .addInterceptor(chain -> {  // offline cache
                     Request request = chain.request();
-                    if (!NetworkUtil.isNetworkConnected(provideContext())) {
+                    if (!NetworkUtil.isNetworkConnected(context)) {
                         CacheControl cacheControl = new CacheControl.Builder()
                                 .maxStale(7, TimeUnit.DAYS)
                                 .build();
@@ -125,21 +108,21 @@ public class AppModule {
                             .build();
                     return chain.proceed(request);
                 })
-                .addNetworkInterceptor(provideHttpLoggingInterceptor())
-                .cache(provideCache())
-                .connectTimeout(10, TimeUnit.SECONDS)
-                .writeTimeout(10, TimeUnit.SECONDS)
-                .readTimeout(30, TimeUnit.SECONDS)
-                .build();
+                .addNetworkInterceptor(interceptor)
+                .cache(cache)
+                .connectTimeout(15L, TimeUnit.SECONDS)
+                .writeTimeout(15L, TimeUnit.SECONDS)
+                .readTimeout(30L, TimeUnit.SECONDS)
+                .retryOnConnectionFailure(true);
     }
 
     @Provides
     @Singleton
-    PlacesApiService provideApiService() {
+    PlacesApiService provideApiService(OkHttpClient.Builder okHttpClientBuilder, Gson gson) {
         return new Retrofit.Builder()
-                .client(provideOkHttpClient())
+                .client(okHttpClientBuilder.build())
                 .baseUrl(Constants.AppConstants.PLACES_API_SERVICE_HOST)
-                .addConverterFactory(GsonConverterFactory.create())
+                .addConverterFactory(GsonConverterFactory.create(gson))
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 .build()
                 .create(PlacesApiService.class);
@@ -147,17 +130,17 @@ public class AppModule {
 
     @Provides
     @Singleton
-    LocationService provideLocationService() {
+    LocationService provideLocationService(@ApplicationContext Context context) {
         int interval1 = AppUtil.secondToMil(1);
         int fastInterval1 = AppUtil.secondToMil(0.5);
         int interval2 = AppUtil.secondToMil(1);
         int fastInterval2 = AppUtil.secondToMil(0.5);
 
-        return new LocationService.Builder(provideContext())
+        return new LocationService.Builder(context)
                 .addLocationRequest(LocationService.newLocationRequest(interval1, fastInterval1,
                         LocationRequest.PRIORITY_HIGH_ACCURACY))
                 .addLocationRequest(LocationService.newLocationRequest(interval2, fastInterval2,
-                        LocationRequest.PRIORITY_HIGH_ACCURACY))
+                        LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY))
                 .build();
     }
 }

@@ -1,19 +1,18 @@
 package com.restaurantapp.ui.base;
 
 
-import com.restaurantapp.injection.component.AppComponent;
 
-public abstract class BasePresenter <T extends BaseView> {
+public abstract class BasePresenter <T extends BaseView> implements Presenter<T> {
     private T mView;
-    private AppComponent mAppComponent;
 
+    @Override
     public void attachView(T view) {
         mView = view;
     }
 
+    @Override
     public void detachView() {
         mView = null;
-        mAppComponent = null;
     }
 
     public boolean isViewAttached() {
@@ -24,11 +23,13 @@ public abstract class BasePresenter <T extends BaseView> {
         return mView;
     }
 
-    protected final AppComponent getComponent() {
-        return mAppComponent;
+    protected void checkViewAttached() {
+        if (!isViewAttached()) throw new ViewNotAttachedException("Please call Presenter.attachView(BaseView) before" +
+                " requesting data to the Presenter");
     }
 
     // Activity or Fragment lifecycle. called in BaseActivity or BaseFragment
+    protected  void onCreateOptionsMenu() {}
 
     protected void onStart() {}
 
@@ -40,5 +41,11 @@ public abstract class BasePresenter <T extends BaseView> {
 
     protected void onDestroy() {
         detachView();
+    }
+
+    public static class ViewNotAttachedException extends RuntimeException {
+        public ViewNotAttachedException(String message) {
+            super(message);
+        }
     }
 }

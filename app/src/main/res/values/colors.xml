@@ -10,4 +10,6 @@
     <color name="warm_gray">#757575</color>
     <color name="light_gray">#aaaaaa</color>
     <color name="edit_text_stroke">#dfdfdf</color>
+    <!--duplicated blue colorPrimary so that no problems occurs when changing the color scheme-->
+    <color name="blue">#3F51B5</color>
 </resources>

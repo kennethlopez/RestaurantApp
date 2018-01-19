@@ -1,8 +1,8 @@
 package com.restaurantapp.data.event;
 
 
-public class EventTurnOnLocation {
-    private boolean locationEventTurnedOn;
+public final class EventTurnOnLocation {
+    private final boolean locationEventTurnedOn;
 
     public EventTurnOnLocation(boolean locationEventTurnedOn) {
         this.locationEventTurnedOn = locationEventTurnedOn;

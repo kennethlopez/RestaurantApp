@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="10dp"
+    android:layout_marginBottom="10dp">
+    <android.support.v7.widget.AppCompatTextView
+        android:id="@+id/item_review_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:maxLines="1"
+        android:textColor="@color/dark_gray"
+        android:textSize="16sp"
+        android:text="Reviewer name" />
+    <ImageView
+        android:id="@+id/item_review_image"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_below="@+id/item_review_name"/>
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_toEndOf="@+id/item_review_image"
+        android:layout_toRightOf="@id/item_review_image"
+        android:layout_marginTop="20dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginStart="8dp">
+        <RatingBar
+            android:id="@+id/item_review_ratingbar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:isIndicator="true"
+            android:numStars="5"
+            android:stepSize="1"
+            android:rating="5"
+            style="?android:ratingBarStyleSmall"/>
+        <android.support.v7.widget.AppCompatTextView
+            android:id="@+id/item_review_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="6 monts ago"/>
+        <android.support.v7.widget.AppCompatTextView
+            android:id="@+id/item_review_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:maxLines="4"
+            android:text="a whole lot of text review"/>
+    </LinearLayout>
+</RelativeLayout>

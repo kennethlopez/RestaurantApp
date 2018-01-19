@@ -1,17 +1,17 @@
 package com.restaurantapp.data.api;
 
 
-import com.restaurantapp.data.api.response.PlacesDetailsResponse;
-import com.restaurantapp.data.api.response.PlacesNearbyResponse;
+import com.restaurantapp.data.api.response.PlaceDetails;
+import com.restaurantapp.data.api.response.PlaceNearby;
 
 
-import io.reactivex.Flowable;
+import io.reactivex.Single;
 import retrofit2.http.GET;
 import retrofit2.http.Query;
 
 public interface PlacesApiService {
     @GET("nearbysearch/json")
-    Flowable<PlacesNearbyResponse> nearbySearch(
+    Single<PlaceNearby> nearbySearch(
             @Query("location") String location,
             @Query("radius") int radius,
             @Query("type") String type,
@@ -19,7 +19,7 @@ public interface PlacesApiService {
     );
 
     @GET("nearbysearch/json")
-    Flowable<PlacesNearbyResponse> nearbySearch(
+    Single<PlaceNearby> nearbySearch(
             @Query("location") String location,
             @Query("radius") int radius,
             @Query("type") String type,
@@ -28,26 +28,26 @@ public interface PlacesApiService {
     );
 
     @GET("nearbysearch/json")
-    Flowable<PlacesNearbyResponse> nearbySearchWithToken(
+    Single<PlaceNearby> nearbySearchWithToken(
             @Query("location") String location,
             @Query("radius") int radius,
             @Query("type") String type,
             @Query("key") String key,
-            @Query("pagetoken") String token
+            @Query("pagetoken") String pageToken
     );
 
     @GET("nearbysearch/json")
-    Flowable<PlacesNearbyResponse> nearbySearchWithToken(
+    Single<PlaceNearby> nearbySearchWithToken(
             @Query("location") String location,
             @Query("radius") int radius,
             @Query("type") String type,
             @Query("key") String key,
             @Query("keyword") String keyword,
-            @Query("pagetoken") String token
+            @Query("pagetoken") String pageToken
     );
 
     @GET("details/json")
-    Flowable<PlacesDetailsResponse> details(
+    Single<PlaceDetails> details(
             @Query("placeid") String placeId,
             @Query("key") String key
     );

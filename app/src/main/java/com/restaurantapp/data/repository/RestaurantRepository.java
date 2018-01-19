@@ -1,16 +1,24 @@
 package com.restaurantapp.data.repository;
 
 
+import android.arch.persistence.room.Transaction;
+
+import com.restaurantapp.R;
 import com.restaurantapp.data.AppDatabase;
 import com.restaurantapp.data.Repository;
 import com.restaurantapp.data.api.PlacesApiService;
-import com.restaurantapp.data.api.response.PhotoResponse;
-import com.restaurantapp.data.api.response.ReviewResponse;
-import com.restaurantapp.data.api.response.PlacesNearbyResponse;
-import com.restaurantapp.data.model.Photo;
-import com.restaurantapp.data.model.Restaurant;
-import com.restaurantapp.data.api.response.PlaceResponse;
-import com.restaurantapp.data.model.Review;
+import com.restaurantapp.data.api.response.PlaceDetails;
+import com.restaurantapp.data.api.response.Restaurant;
+import com.restaurantapp.data.api.response.PlaceNearby;
+import com.restaurantapp.data.event.EventError;
+import com.restaurantapp.data.event.exception.OverQueryLimitException;
+import com.restaurantapp.data.model.PhotoModel;
+import com.restaurantapp.data.model.RestaurantModel;
+import com.restaurantapp.data.model.ReviewModel;
+import com.restaurantapp.util.AppUtil;
+import com.restaurantapp.util.Constants;
+import com.restaurantapp.util.ConverterUtil;
+import com.restaurantapp.util.RxBus;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,93 +28,168 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import io.reactivex.Flowable;
+import io.reactivex.Single;
 
 @Singleton
-public class RestaurantRepository implements Repository<Restaurant> {
+public class RestaurantRepository implements Repository<RestaurantModel>, Constants.ErrorTypes {
     private AppDatabase.RestaurantDao mRestaurantDao;
     private AppDatabase.PhotoDao mPhotoDao;
     private AppDatabase.ReviewDao mReviewDao;
     private PlacesApiService mApiService;
+    private RxBus mBus;
+
+    private Restaurant mRestaurant;
+    private List<Restaurant> mRestaurants = new ArrayList<>();
 
     @Inject
     public RestaurantRepository(PlacesApiService apiService, AppDatabase.RestaurantDao restaurantDao,
-                                AppDatabase.PhotoDao photoDao, AppDatabase.ReviewDao reviewDao) {
+            AppDatabase.PhotoDao photoDao, AppDatabase.ReviewDao reviewDao, RxBus bus) {
         mRestaurantDao = restaurantDao;
         mPhotoDao = photoDao;
         mReviewDao = reviewDao;
         mApiService = apiService;
+        mBus = bus;
     }
 
     @Override
-    public long insert(Restaurant item) {
+    public long insert(RestaurantModel item) {
         return mRestaurantDao.insert(item);
     }
 
     @Override
-    public long[] insert(List<Restaurant> items) {
+    public long[] insert(List<RestaurantModel> items) {
         return mRestaurantDao.insert(items);
     }
 
     @Override
-    public void update(Restaurant item) {
+    public void update(RestaurantModel item) {
         mRestaurantDao.update(item);
     }
 
     @Override
-    public void update(List<Restaurant> items) {
+    public void update(List<RestaurantModel> items) {
         mRestaurantDao.update(items);
     }
 
-    public Flowable<PlacesNearbyResponse> nearbySearch(String location, int radius, String type,
-                                                       String key) {
+    public List<Restaurant> getRestaurants() {
+        return mRestaurants;
+    }
+
+    public Restaurant getRestaurant() {
+        return mRestaurant;
+    }
+
+    public Single<PlaceNearby> nearbySearch(String location, int radius, String type,
+                                            String key) {
         return mApiService.nearbySearch(location, radius, type, key)
-                .map(placesNearbyResponse -> {
-                    processResponse(placesNearbyResponse);
-                    return placesNearbyResponse;
+                .map(placeNearby -> {
+                    mRestaurants = saveResult(placeNearby);
+                    return placeNearby;
                 });
     }
 
-    public Flowable<PlacesNearbyResponse> nearBySearchWithToken(String location, int radius,
-            String type, String key, String pageToken) {
+    public Single<PlaceNearby> nearBySearchWithToken(String location, int radius, String type,
+                                                     String key, String pageToken) {
         return mApiService.nearbySearchWithToken(location, radius, type, key, pageToken)
-                .map(placesNearbyResponse -> {
-                    processResponse(placesNearbyResponse);
-                    return placesNearbyResponse;
+                .map(placeNearby -> {
+                    // append page result to restaurants
+                    mRestaurants.addAll(saveResult(placeNearby));
+                    return placeNearby;
                 });
     }
 
-    private void processResponse(PlacesNearbyResponse placesNearbyResponse) {
-        List<PlaceResponse> places = placesNearbyResponse.getResults();
+    public Single<PlaceDetails> detailsSearch(String placeId, String key) {
+        return mApiService.details(placeId, key)
+                .map(placeDetails -> {
+                    mRestaurant = saveResult(placeDetails);
+                    return placeDetails;
+                });
+    }
+
+    @Transaction
+    public Flowable<PlaceDetails> fetchRestaurant(String placeId) {
+        return mRestaurantDao.getRestaurant(placeId)
+                .map(restaurant -> {
+                    List<PhotoModel> photos = mPhotoDao.getPhotos(restaurant.getId());
+                    List<ReviewModel> reviews = mReviewDao.getReviews(restaurant.getId());
+
+                    PlaceDetails placeDetails = new PlaceDetails();
+                    placeDetails.setResult(ConverterUtil.fromRestaurantModel(restaurant, photos, reviews));
+                    placeDetails.setStatus(Constants.AppConstants.STATUS_OK);
+
+                    return placeDetails;
+                });
+    }
+
+    @Transaction
+    public Flowable<Restaurant> fetchRestaurants(String[] placeIds) {
+        return mRestaurantDao.getRestaurants(placeIds)
+                .switchMap(Flowable::fromIterable)
+                .map(restaurantModel -> {
+                    List<PhotoModel> photoModels = mPhotoDao.getPhotos(restaurantModel.getId());
+                    List<ReviewModel> reviewModels = mReviewDao.getReviews(restaurantModel.getId());
+                    return ConverterUtil.fromRestaurantModel(restaurantModel, photoModels,
+                            reviewModels);
+                });
+    }
+
+    @Transaction
+    public Flowable<Restaurant> fetchRestaurants() {
+        return mRestaurantDao.getRestaurants()
+                .switchMap(Flowable::fromIterable)
+                .map(restaurantModel -> {
+                    List<PhotoModel> photoModels = mPhotoDao.getPhotos(restaurantModel.getId());
+                    List<ReviewModel> reviewModels = mReviewDao.getReviews(restaurantModel.getId());
+                    return ConverterUtil.fromRestaurantModel(restaurantModel, photoModels,
+                            reviewModels);
+                });
+    }
+
+    private Restaurant saveResult(PlaceDetails placeDetails) {
+        throwOnOverQueryLimit(placeDetails.getStatus());
+
+        return saveRestaurant(placeDetails.getResult());
+    }
+
+    private List<Restaurant> saveResult(PlaceNearby placeNearby) {
+        throwOnOverQueryLimit(placeNearby.getStatus());
+
+        List<Restaurant> newRestaurants = new ArrayList<>();
+        List<Restaurant> restaurants = placeNearby.getResults();
+        List<RestaurantModel> restaurantModels = ConverterUtil.toRestaurantModels(restaurants);
 
         // save restaurants to db
-        List<Restaurant> restaurants = new ArrayList<>();
-        for (PlaceResponse place : places) {
-            restaurants.add(Restaurant.newInstance(place));
+        long[] restaurantIds = insert(restaurantModels);
+        for (int c = 0; c < restaurantModels.size(); c++) {
+            Restaurant restaurant = savePhotosAndReviews(restaurants.get(c), restaurantIds[c]);
+            newRestaurants.add(restaurant);
         }
-        long[] restaurantIds = insert(restaurants);
 
-        for (int c = 0; c < restaurants.size(); c++) {
-            PlaceResponse place = places.get(c);
-            List<PhotoResponse> photosResponse = place.getPhotos();
-            List<ReviewResponse> reviewsResponse = place.getReviews();
+        return newRestaurants;
+    }
 
-            // save photos of each restaurants to db
-            if (places.get(c).getPhotos() != null) {
-                List<Photo> photos = new ArrayList<>();
-                for (PhotoResponse photoResponse : photosResponse) {
-                    photos.add(Photo.newInstance(photoResponse, restaurantIds[c]));
-                }
-                mPhotoDao.insert(photos);
-            }
+    private Restaurant savePhotosAndReviews(Restaurant restaurant, long restaurantId) {
+        List<PhotoModel> photoModels = ConverterUtil.toPhotoModels(restaurant, restaurantId);
+        List<ReviewModel> reviewModels = ConverterUtil.toReviewModels(restaurant, restaurantId);
 
-            // save reviews of each restaurants to db
-            if (places.get(c).getReviews() != null) {
-                List<Review> reviews = new ArrayList<>();
-                for (ReviewResponse reviewResponse : reviewsResponse) {
-                    reviews.add(Review.newInstance(reviewResponse, restaurantIds[c]));
-                }
-                mReviewDao.insert(reviews);
-            }
+        mPhotoDao.insert(photoModels);
+        mReviewDao.insert(reviewModels);
+
+        restaurant.setPhotos(ConverterUtil.fromPhotoModels(photoModels));
+        restaurant.setReviews(ConverterUtil.fromReviewModels(reviewModels));
+
+        return restaurant;
+    }
+
+    private Restaurant saveRestaurant(Restaurant restaurant) {
+        long restaurantId = mRestaurantDao.insert(ConverterUtil.toRestaurantModel(restaurant));
+        return savePhotosAndReviews(restaurant, restaurantId);
+    }
+
+    private void throwOnOverQueryLimit(String status) {
+        if (AppUtil.overQueryLimit(status)) {
+            mBus.post(new EventError(ERROR_CONNECTION, R.string.over_query_limit_message));
+            throw new OverQueryLimitException();
         }
     }
 }

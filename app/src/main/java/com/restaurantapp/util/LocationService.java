@@ -18,6 +18,8 @@ import com.google.android.gms.location.places.PlaceDetectionClient;
 import com.google.android.gms.location.places.PlaceLikelihood;
 import com.google.android.gms.location.places.PlaceLikelihoodBufferResponse;
 import com.google.android.gms.location.places.Places;
+import com.google.android.gms.maps.model.LatLng;
+import com.restaurantapp.data.api.response.Geometry;
 
 import io.reactivex.Single;
 import io.reactivex.SingleEmitter;
@@ -71,7 +73,7 @@ public final class LocationService {
     }
 
     @SuppressLint("MissingPermission")
-    private void getCurrentLocation(SingleEmitter<Location> e) {
+    private void getCurrentLocation(SingleEmitter<Location> e) throws RuntimeException {
         mPlaceDetectionClient.getCurrentPlace(null)
                 .addOnCompleteListener(task -> {
                     PlaceLikelihoodBufferResponse likelyPlaces = task.getResult();
@@ -83,6 +85,7 @@ public final class LocationService {
                             place = placeLikelihood.getPlace();
                         }
                     }
+
                     if (place != null) e.onSuccess(new Location(place));
                     else e.onSuccess(null);
 
@@ -105,12 +108,11 @@ public final class LocationService {
             return this;
         }
 
-        @SuppressWarnings("unused")
         public final LocationService.Builder addDefaultLocationSettingsRequest() {
-            mBuilder.addLocationRequest(newLocationRequest(DEFAULT_INTERVAL, DEFAULT_FAST_INTERVAL,
-                    LocationRequest.PRIORITY_HIGH_ACCURACY))
-                    .addLocationRequest(newLocationRequest(DEFAULT_INTERVAL, DEFAULT_FAST_INTERVAL,
-                            LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY));
+            addLocationRequest(newLocationRequest(DEFAULT_INTERVAL, DEFAULT_FAST_INTERVAL,
+                    LocationRequest.PRIORITY_HIGH_ACCURACY));
+            addLocationRequest(newLocationRequest(DEFAULT_INTERVAL, DEFAULT_FAST_INTERVAL,
+                    LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY));
             return this;
         }
 
@@ -132,18 +134,63 @@ public final class LocationService {
     }
 
     public static class Location {
-        private Place mPlace;
+        private LatLng mLatLng;
+        private String mAddress = "";
 
         public Location(Place place) {
-            mPlace = place;
+            mAddress = String.valueOf(place.getAddress());
+            mLatLng = place.getLatLng();
+        }
+
+        public Location(double lat, double lng) {
+            mLatLng = new LatLng(lat, lng);
         }
 
         public LatLng getLatLng() {
-            return new LatLng(mPlace.getLatLng().latitude, mPlace.getLatLng().longitude);
+            return mLatLng;
+        }
+
+        public double getLat() {
+            if (mLatLng != null) return mLatLng.latitude;
+            return 0;
+        }
+
+        public double getLng() {
+            if (mLatLng != null) return mLatLng.longitude;
+            return 0;
+        }
+
+        public void setAddress(String address) {
+            mAddress = address;
         }
 
         public String getAddress() {
-            return String.valueOf(mPlace.getAddress());
+            return mAddress;
+        }
+
+        public String latLngString() {
+            return mLatLng.latitude + "," + mLatLng.longitude;
+        }
+
+        public int kmDistanceFrom(Location location) {
+            return (int) distanceFrom(location.getLat(), location.getLng()) / 1000;
+        }
+
+        public double distanceFrom(double lat, double lng) {
+            android.location.Location thisLocation = new android.location.Location(getAddress());
+            android.location.Location location = new android.location.Location("Location A");
+            location.setLatitude(lat);
+            location.setLongitude(lng);
+            thisLocation.setLatitude(getLat());
+            thisLocation.setLongitude(getLng());
+
+            return thisLocation.distanceTo(location);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            Geometry.Location location = (Geometry.Location) obj;
+            return location.getLat() == this.getLat() && location.getLng() == this.getLng();
         }
     }
 }

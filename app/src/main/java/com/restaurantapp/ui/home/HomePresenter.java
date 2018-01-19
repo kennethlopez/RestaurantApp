@@ -4,6 +4,7 @@ package com.restaurantapp.ui.home;
 import com.restaurantapp.R;
 import com.restaurantapp.injection.ConfigPersistent;
 import com.restaurantapp.ui.base.BasePresenter;
+import com.restaurantapp.util.ResourceUtil;
 
 import javax.inject.Inject;
 
@@ -12,20 +13,22 @@ public class HomePresenter extends BasePresenter<HomeContract.View> implements H
         HomeContract.FragmentTags, HomeContract.MenuItemIndexes {
 
     private String[] mToolbarTitles;
-    private String mFragmentTag = "";
+    private String mCurrentFragmentTag;
 
     @Inject
-    public HomePresenter() {}
+    HomePresenter(ResourceUtil resourceUtil) {
+        mToolbarTitles = resourceUtil.getToolbarTitles();
+        mCurrentFragmentTag = HomeContract.FragmentTags.FRAGMENT_NEARBY;
+    }
 
     @Override
     public void attachView(HomeContract.View view) {
         super.attachView(view);
-        mToolbarTitles = view.getToolbarTitles(R.array.bottom_nav_toolbar_titles);
 
         view.setToolbar();
         view.setBottomNav();
 
-        loadFragment(FRAGMENT_FIND_PLACE);
+        loadFragment(mCurrentFragmentTag);
     }
 
     @Override
@@ -34,8 +37,8 @@ public class HomePresenter extends BasePresenter<HomeContract.View> implements H
 
         switch (menuItemId) {
             default:
-            case R.id.menu_bottom_nav_find_place:
-                fragmentTag = FRAGMENT_FIND_PLACE;
+            case R.id.menu_bottom_nav_nearby:
+                fragmentTag = FRAGMENT_NEARBY;
                 break;
             case R.id.menu_bottom_nav_tastes:
                 fragmentTag = FRAGMENT_TASTES;
@@ -48,8 +51,8 @@ public class HomePresenter extends BasePresenter<HomeContract.View> implements H
                 break;
         }
 
-        if (!mFragmentTag.contentEquals(fragmentTag)) {
-            mFragmentTag = fragmentTag;
+        if (!mCurrentFragmentTag.contentEquals(fragmentTag)) {
+            mCurrentFragmentTag = fragmentTag;
             loadFragment(fragmentTag);
         }
 
@@ -58,29 +61,28 @@ public class HomePresenter extends BasePresenter<HomeContract.View> implements H
 
     private void loadFragment(String fragmentTag) {
         int index;
-        int fragmentId = R.id.activity_main_frame;
+        int fragmentId = HomeContract.FRAGMENT_CONTAINER_VIEW_ID;
 
+        // not set action bar title are provided by their fragment
         switch (fragmentTag) {
             default:
-            case FRAGMENT_FIND_PLACE:
-                index = MENU_ITEM_FIND_PLACE_INDEX;
-                getView().loadFindPlaceFragment(fragmentId, fragmentTag);
+            case FRAGMENT_NEARBY:
+                getView().loadNearbyFragment(fragmentId, fragmentTag);
                 break;
 
             case FRAGMENT_TASTES:
                 index = MENU_ITEM_TASTES_INDEX;
+                getView().setActionBarTitle(mToolbarTitles[index]);
                 getView().loadTastesFragment(fragmentId, fragmentTag);
                 break;
             case FRAGMENT_FAVORITES:
                 index = MENU_ITEM_FAVORITES_INDEX;
+                getView().setActionBarTitle(mToolbarTitles[index]);
                 getView().loadFavoritesFragment(fragmentId, fragmentTag);
                 break;
             case FRAGMENT_MAP:
-                index = MENU_ITEM_MAP_INDEX;
                 getView().loadMapFragment(fragmentId, fragmentTag);
                 break;
         }
-
-        getView().setToolbarTitle(mToolbarTitles[index]);
     }
 }
