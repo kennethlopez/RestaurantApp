@@ -117,7 +117,10 @@ public class Restaurant implements Fields.RestaurantFields {
 
     @Override
     public boolean equals(Object obj) {
-        Restaurant restaurant = (Restaurant) obj;
-        return restaurant.getPlaceId().contentEquals(getPlaceId());
+        if (obj != null && obj instanceof Restaurant) {
+            Restaurant restaurant = (Restaurant) obj;
+            return restaurant.getPlaceId().contentEquals(getPlaceId());
+        }
+        return false;
     }
 }

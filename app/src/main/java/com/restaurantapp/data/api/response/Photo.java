@@ -28,4 +28,13 @@ public class Photo implements Fields.PhotoFields {
     public String getPhotoReference() {
         return photoReference;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj != null && obj instanceof Photo) {
+            Photo photo = (Photo) obj;
+            return photo.getPhotoReference().contentEquals(getPhotoReference());
+        }
+        return false;
+    }
 }

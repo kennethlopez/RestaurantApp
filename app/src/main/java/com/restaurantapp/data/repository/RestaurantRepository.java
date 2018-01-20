@@ -193,7 +193,7 @@ public class RestaurantRepository implements Repository<RestaurantModel>, Consta
 
     private void throwOnOverQueryLimit(String status) {
         if (AppUtil.overQueryLimit(status)) {
-            mBus.post(new EventError(ERROR_CONNECTION, R.string.over_query_limit_message));
+            mBus.post(new EventError(ERROR_OVER_QUERY_LIMIT, R.string.over_query_limit_message));
             throw new OverQueryLimitException();
         }
     }

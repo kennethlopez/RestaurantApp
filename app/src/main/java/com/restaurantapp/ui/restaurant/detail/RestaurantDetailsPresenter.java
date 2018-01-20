@@ -1,6 +1,8 @@
 package com.restaurantapp.ui.restaurant.detail;
 
 
+import android.text.TextUtils;
+
 import com.restaurantapp.R;
 import com.restaurantapp.data.api.response.Photo;
 import com.restaurantapp.data.api.response.Restaurant;
@@ -62,7 +64,7 @@ public class RestaurantDetailsPresenter extends BasePresenter<RestaurantDetailsC
         getView().showProgressBars();
 
         if (mRestaurant != null && mRestaurant.equals(restaurant)) {
-            setRestaurant(mRestaurant);
+            setRestaurant(mRestaurant, true);
             details(restaurant);
         } else {
             mRestaurant = restaurant;
@@ -112,7 +114,6 @@ public class RestaurantDetailsPresenter extends BasePresenter<RestaurantDetailsC
                 setPhotoFrom(restaurant.getPhotos());
 
                 if (photos.size() > 1) hasPhotos = true;
-                else getView().hidePhotosContainer();
 
             } else getView().hidePhotosContainer();
 
@@ -123,15 +124,21 @@ public class RestaurantDetailsPresenter extends BasePresenter<RestaurantDetailsC
                 mDisposable = mRestaurantRepository.detailsSearch(restaurant.getPlaceId(), mApiKey)
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(placeDetails -> setRestaurant(placeDetails.getResult()),
+                        .subscribe(placeDetails -> setRestaurant(placeDetails.getResult(), false),
                                 throwable -> handleThrowable(restaurant, throwable));
-            }
+            } else getView().hidePhotosContainer();
         } else hidePhotoAndReviewContainer();
     }
 
-    private void setRestaurant(Restaurant restaurant) {
+    private void setRestaurant(Restaurant restaurant, boolean setPhoto) {
         mRestaurant = restaurant;
-        List<Photo> photos = setPhotoFrom(restaurant.getPhotos());
+
+        List<Photo> photos;
+        if (setPhoto) photos = setPhotoFrom(restaurant.getPhotos());
+        else photos = removeFirstAvailablePhoto(restaurant.getPhotos());
+
+        if (photos.size() > 0) getView().setPhotos(photos);
+        else getView().hidePhotosContainer();
 
         setFavorite();
         getView().setReviews(restaurant.getReviews());
@@ -150,16 +157,12 @@ public class RestaurantDetailsPresenter extends BasePresenter<RestaurantDetailsC
 
     private List<Photo> setPhotoFrom(List<Photo> photos) {
         if (photos != null) {
-            for (int c = 0; c < photos.size(); c++) {
-                Photo photo = photos.get(c);
-                if (photo != null) {
-                    setPhoto(photo);
-                    photos.remove(c);
-                    break;
-                }
+            Photo photo = getFirstPhoto(photos);
+            if (photo != null) {
+                setPhoto(photo);
+                photos.remove(photo);
             }
         }
-
         return photos;
     }
 
@@ -169,6 +172,20 @@ public class RestaurantDetailsPresenter extends BasePresenter<RestaurantDetailsC
         String url = AppUtil.getGooglePhotosLink(photo.getPhotoReference(), maxWidth, height, mApiKey);
 
         getView().setPhoto(url);
+    }
+
+    private List<Photo> removeFirstAvailablePhoto(List<Photo> photos) {
+        if (photos != null) photos.remove(getFirstPhoto(photos));
+        return photos;
+    }
+
+    private Photo getFirstPhoto(List<Photo> photos) {
+        if (photos != null) {
+            for (Photo photo : photos) {
+                if (photo != null && !TextUtils.isEmpty(photo.getPhotoReference())) return photo;
+            }
+        }
+        return null;
     }
 
     private void handleThrowable(Restaurant restaurant, Throwable throwable) {
@@ -189,7 +206,7 @@ public class RestaurantDetailsPresenter extends BasePresenter<RestaurantDetailsC
             mDisposable = mRestaurantRepository.fetchRestaurant(restaurant.getPlaceId())
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(placeDetails -> setRestaurant(restaurant));
+                    .subscribe(placeDetails -> setRestaurant(restaurant, true));
         }
         throwable.printStackTrace();
     }

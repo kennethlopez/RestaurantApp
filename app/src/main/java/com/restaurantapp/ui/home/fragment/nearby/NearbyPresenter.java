@@ -88,7 +88,7 @@ public class NearbyPresenter extends BasePresenter<NearbyContract.View> implemen
             else nearbySearch();
         } else setRestaurant(POSITION_TOP);
 
-        RxUtil.dispose(mCompositeDisposable);
+        mCompositeDisposable.clear();
         eventRecyclerViewBottomScrolled();
         eventTurnOnLocation();
     }

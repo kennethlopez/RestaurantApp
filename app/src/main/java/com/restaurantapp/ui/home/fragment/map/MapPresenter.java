@@ -94,7 +94,7 @@ public class MapPresenter extends BasePresenter<MapContract.View> implements Map
             else nearbySearch(false);
         }
 
-        RxUtil.dispose(mCompositeDisposable);
+        mCompositeDisposable.clear();
         eventTurnOnLocation();
     }
 
