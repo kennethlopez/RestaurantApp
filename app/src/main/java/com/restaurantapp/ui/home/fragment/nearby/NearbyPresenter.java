@@ -218,17 +218,23 @@ public class NearbyPresenter extends BasePresenter<NearbyContract.View> implemen
 
     private void handleThrowable(Throwable throwable, String method, int position) {
         if (NetworkUtil.isConnectionError(throwable)) {
+            RxUtil.dispose(mDisposable);
+
             mBus.post(new EventError(ERROR_CONNECTION, R.string.connection_error_message));
-            mReconnectDelay = AppUtil.reconnectDelay(() -> {
-                switch (method) {
-                    case METHOD_SEARCH:
-                        nearbySearch();
-                        break;
-                    case METHOD_SEARCH_WITH_TOKEN:
-                        nearbySearchWithToken(position);
-                        break;
-                }
-            }, mReconnectDelay);
+            mDisposable = RxUtil.reconnectDelay(mReconnectDelay)
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(aDouble -> {
+                        mReconnectDelay = aDouble;
+                        switch (method) {
+                            case METHOD_SEARCH:
+                                nearbySearch();
+                                break;
+                            case METHOD_SEARCH_WITH_TOKEN:
+                                nearbySearchWithToken(position);
+                                break;
+                        }
+                    });
         } else refreshing(false);
 
         throwable.printStackTrace();

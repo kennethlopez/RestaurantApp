@@ -8,6 +8,7 @@ import android.support.annotation.RequiresPermission;
 
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.ResolvableApiException;
+import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
@@ -31,10 +32,12 @@ public final class LocationService {
     private Context mContext;
     private LocationSettingsRequest mLocationSettingsRequest;
     private PlaceDetectionClient mPlaceDetectionClient;
+    private FusedLocationProviderClient mFusedLocationProviderClient;
 
     private LocationService(Context context) {
         mContext = context;
         mPlaceDetectionClient = Places.getPlaceDetectionClient(context, null);
+        mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(mContext);
     }
 
     private void setLocationSettingsRequest(LocationSettingsRequest locationSettingsRequest) {
@@ -76,21 +79,33 @@ public final class LocationService {
     private void getCurrentLocation(SingleEmitter<Location> e) throws RuntimeException {
         mPlaceDetectionClient.getCurrentPlace(null)
                 .addOnCompleteListener(task -> {
-                    PlaceLikelihoodBufferResponse likelyPlaces = task.getResult();
-                    Place place = null;
-                    float likelyHood = 0;
-                    for (PlaceLikelihood placeLikelihood : likelyPlaces) {
-                        if (placeLikelihood.getLikelihood() > likelyHood) {
-                            likelyHood = placeLikelihood.getLikelihood();
-                            place = placeLikelihood.getPlace();
+                    try {
+                        PlaceLikelihoodBufferResponse likelyPlaces =
+                                task.getResult(ApiException.class);
+                        Place place = null;
+                        float likelyHood = 0;
+                        for (PlaceLikelihood placeLikelihood : likelyPlaces) {
+                            if (placeLikelihood.getLikelihood() > likelyHood) {
+                                likelyHood = placeLikelihood.getLikelihood();
+                                place = placeLikelihood.getPlace();
+                            }
                         }
+
+                        if (place != null) e.onSuccess(new Location(place));
+                        else e.onSuccess(null);
+
+                        likelyPlaces.release();
+                    } catch (ApiException exception) {
+                        getLastLocation(e);
                     }
+                });
+    }
 
-                    if (place != null) e.onSuccess(new Location(place));
-                    else e.onSuccess(null);
-
-                    likelyPlaces.release();
-                })
+    @SuppressLint("MissingPermission")
+    private void getLastLocation(SingleEmitter<Location> e) {
+        mFusedLocationProviderClient.getLastLocation()
+                .addOnSuccessListener(location ->
+                        e.onSuccess(new Location(location.getLatitude(), location.getLongitude())))
                 .addOnFailureListener(e::onError);
     }
 

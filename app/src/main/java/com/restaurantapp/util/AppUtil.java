@@ -35,8 +35,8 @@ public final class AppUtil {
         return 0;
     }
 
-    public static int secondToMil(double second) {
-        return (int) (second * 1000);
+    public static long toMilliseconds(double second) {
+        return (long) (second * 1000);
     }
 
     public static void setRating(RatingBar ratingBar, AppCompatTextView ratingText, float rating) {
@@ -79,13 +79,6 @@ public final class AppUtil {
             }
         }
         return favoritesString;
-    }
-
-    public static double reconnectDelay(Runnable runnable, double seconds) {
-        if (seconds == 0) seconds = 0.5;
-        if (seconds > 12) seconds = 12;
-        new Handler().postDelayed(runnable, secondToMil(seconds));
-        return seconds + 0.5;
     }
 
     public static boolean overQueryLimit(String status) {

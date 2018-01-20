@@ -249,14 +249,20 @@ public class MapPresenter extends BasePresenter<MapContract.View> implements Map
     }
 
     private void onError(Throwable throwable) {
-        if (isViewAttached()) getView().hideProgressBar();
+        getView().hideProgressBar();
 
         if (NetworkUtil.isConnectionError(throwable)) {
+            RxUtil.dispose(mDisposable);
+
             mBus.post(new EventError(ERROR_CONNECTION, R.string.connection_error_message));
-            mReconnectDelay = AppUtil.reconnectDelay(() -> {
-                if (TextUtils.isEmpty(mNextPageToken)) nearbySearch(mClearMap);
-                else nearbySearchWithToken(mNextPageToken);
-            }, mReconnectDelay);
+            mDisposable = RxUtil.reconnectDelay(mReconnectDelay)
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(aDouble -> {
+                        mReconnectDelay = aDouble;
+                        if (TextUtils.isEmpty(mNextPageToken)) nearbySearch(mClearMap);
+                        else nearbySearchWithToken(mNextPageToken);
+                    });
         } throwable.printStackTrace();
     }
 }

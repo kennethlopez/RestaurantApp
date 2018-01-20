@@ -172,9 +172,16 @@ public class RestaurantDetailsPresenter extends BasePresenter<RestaurantDetailsC
         RxUtil.dispose(mDisposable);
 
         if (NetworkUtil.isConnectionError(throwable)) {
-            mBus.post(new EventError(ERROR_CONNECTION, R.string.connection_error_message));
 
-            mReconnectDelay = AppUtil.reconnectDelay(() -> details(mRestaurant), mReconnectDelay);
+            mBus.post(new EventError(ERROR_CONNECTION, R.string.connection_error_message));
+            mDisposable = RxUtil.reconnectDelay(mReconnectDelay)
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(aDouble -> {
+                        mReconnectDelay = aDouble;
+                        details(mRestaurant);
+                    });
+
         } else if (throwable instanceof OverQueryLimitException) {
             mDisposable = mRestaurantRepository.fetchRestaurant(restaurant.getPlaceId())
                     .subscribeOn(Schedulers.io())

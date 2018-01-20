@@ -131,10 +131,10 @@ public class AppModule {
     @Provides
     @Singleton
     LocationService provideLocationService(@ApplicationContext Context context) {
-        int interval1 = AppUtil.secondToMil(1);
-        int fastInterval1 = AppUtil.secondToMil(0.5);
-        int interval2 = AppUtil.secondToMil(1);
-        int fastInterval2 = AppUtil.secondToMil(0.5);
+        long interval1 = AppUtil.toMilliseconds(1);
+        long fastInterval1 = AppUtil.toMilliseconds(0.5);
+        long interval2 = AppUtil.toMilliseconds(1);
+        long fastInterval2 = AppUtil.toMilliseconds(0.5);
 
         return new LocationService.Builder(context)
                 .addLocationRequest(LocationService.newLocationRequest(interval1, fastInterval1,

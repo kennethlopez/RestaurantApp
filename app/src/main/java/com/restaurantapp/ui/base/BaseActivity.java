@@ -4,7 +4,6 @@ package com.restaurantapp.ui.base;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.util.LongSparseArray;
 import android.support.v7.app.AppCompatActivity;
@@ -18,7 +17,6 @@ import com.restaurantapp.injection.component.ConfigPersistentComponent;
 import com.restaurantapp.injection.component.DaggerConfigPersistentComponent;
 import com.restaurantapp.injection.module.ActivityModule;
 import com.restaurantapp.ui.home.HomePresenter;
-import com.restaurantapp.util.AppUtil;
 import com.restaurantapp.util.Constants;
 import com.restaurantapp.util.DialogFactory;
 import com.restaurantapp.util.RxBus;
@@ -47,6 +45,7 @@ public abstract class BaseActivity extends AppCompatActivity implements Constant
     private RxBus mBus;
     private Dialog mDialog;
     private SharedPrefUtil mSharedPrefUtil;
+    private boolean displayedConnectionErrorDialog;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -151,11 +150,8 @@ public abstract class BaseActivity extends AppCompatActivity implements Constant
                                 }
                                 break;
                             case ERROR_CONNECTION:
-                                if (mSharedPrefUtil.displayedConnectionErrorDialog()) break;
-                                else {
-                                    mSharedPrefUtil.setDisplayedConnectionErrorDialog(true);
-                                    resetConnectionErrorDialogFlag();
-                                }
+                                if (displayedConnectionErrorDialog) break;
+                                else displayedConnectionErrorDialog = true;
                             default:
                                 showDialog(eventError.getMessageResId(),
                                         (DialogInterface.OnClickListener) null);
@@ -168,13 +164,6 @@ public abstract class BaseActivity extends AppCompatActivity implements Constant
     private void showDialog(int res, DialogInterface.OnClickListener clickListener) {
         mDialog = DialogFactory.createGenericErrorDialog(this, res, clickListener);
         mDialog.show();
-    }
-
-    private void resetConnectionErrorDialogFlag() {
-        // connection error dialog can be shown after 12 seconds
-        new Handler().postDelayed(() ->
-                mSharedPrefUtil.setDisplayedConnectionErrorDialog(false),
-                AppUtil.secondToMil(12));
     }
 
     private void resetOverQueryLimitDialogFlag() {
