@@ -27,6 +27,7 @@ public class FavoritesPresenter extends BasePresenter<FavoritesContract.View> im
     private String[] mFavorites;
     private List<Restaurant> mRestaurants = new ArrayList<>();
     private Disposable mDisposable;
+    private boolean start;
 
     @Inject
     FavoritesPresenter (RestaurantRepository restaurantRepository, SharedPrefUtil sharedPrefUtil) {
@@ -39,6 +40,7 @@ public class FavoritesPresenter extends BasePresenter<FavoritesContract.View> im
         super.attachView(view);
         getView().initRecyclerView(mRestaurants);
         mFavorites = mSharedPrefUtil.getFavoritesArray();
+        start = true;
     }
 
     @Override
@@ -58,7 +60,8 @@ public class FavoritesPresenter extends BasePresenter<FavoritesContract.View> im
         RxUtil.dispose(mDisposable);
 
         String[] favorites = mSharedPrefUtil.getFavoritesArray();
-        if (favoritesUpdated(favorites)) {
+        if (start || favoritesUpdated(favorites)) {
+            start = false;
             mDisposable = mRestaurantRepository.fetchRestaurants(favorites)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
@@ -81,9 +84,9 @@ public class FavoritesPresenter extends BasePresenter<FavoritesContract.View> im
         if (favorites.length != mFavorites.length) return true;
         else {
             for (int c = 0; c < favorites.length; c++) {
-                if (favorites[c].contentEquals(mFavorites[c])) return true;
+                if (!favorites[c].contentEquals(mFavorites[c])) return true;
             }
         }
-        return true;
+        return false;
     }
 }
