@@ -29,7 +29,6 @@ public interface Constants {
         String PREF_LOCATION_ADDRESS = "pref_location_address";
         String PREF_NEARBY_RADIUS = "pref_nearby_radius";
         String PREF_DISPLAYED_OVER_QUERY_LIMIT_DIALOG = "pref_displayed_over_query_limit_dialog";
-        String PREF_DISPLAYED_CONNECTION_ERROR_DIALOG = "pref_displayed_connection_error_dialog";
         String PREF_FAVORITES = "pref_favorites";
         String PREF_MAP_ZOOM = "pref_map_zoom";
     }

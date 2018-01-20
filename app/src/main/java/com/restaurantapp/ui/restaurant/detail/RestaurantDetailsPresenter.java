@@ -93,6 +93,13 @@ public class RestaurantDetailsPresenter extends BasePresenter<RestaurantDetailsC
         }
     }
 
+    @Override
+    protected void onDestroy() {
+        RxUtil.dispose(mDisposable);
+
+        super.onDestroy();
+    }
+
     private void details(Restaurant restaurant) {
         RxUtil.dispose(mDisposable);
 
@@ -107,10 +114,10 @@ public class RestaurantDetailsPresenter extends BasePresenter<RestaurantDetailsC
                 if (photos.size() > 1) hasPhotos = true;
                 else getView().hidePhotosContainer();
 
-            } else if (isViewAttached()) getView().hidePhotosContainer();
+            } else getView().hidePhotosContainer();
 
             if (restaurant.getRating() > 0) hasReviews = true;
-            else if (isViewAttached()) getView().hideReviewsContainer();
+            else getView().hideReviewsContainer();
 
             if (hasPhotos || hasReviews) {
                 mDisposable = mRestaurantRepository.detailsSearch(restaurant.getPlaceId(), mApiKey)
@@ -126,22 +133,18 @@ public class RestaurantDetailsPresenter extends BasePresenter<RestaurantDetailsC
         mRestaurant = restaurant;
         List<Photo> photos = setPhotoFrom(restaurant.getPhotos());
 
-        if (isViewAttached()) {
-            setFavorite();
-            getView().setReviews(restaurant.getReviews());
-            getView().setPhotos(photos);
-            getView().hideProgressBars();
-        }
+        setFavorite();
+        getView().setReviews(restaurant.getReviews());
+        getView().setPhotos(photos);
+        getView().hideProgressBars();
     }
 
     private void setFavorite() {
         mIsFavorite = mSharedPrefUtil.isFavorite(mRestaurant.getPlaceId());
 
         if (mIsOptionsMenuCreated) {
-            if (isViewAttached()) {
-                if (mIsFavorite) getView().setFavoritesMenuItemTint(R.color.colorAccent);
-                else getView().setFavoritesMenuItemTint(android.R.color.white);
-            }
+            if (mIsFavorite) getView().setFavoritesMenuItemTint(R.color.colorAccent);
+            else getView().setFavoritesMenuItemTint(android.R.color.white);
         }
     }
 
@@ -165,14 +168,13 @@ public class RestaurantDetailsPresenter extends BasePresenter<RestaurantDetailsC
         int height = AppUtil.dpToPx(120);
         String url = AppUtil.getGooglePhotosLink(photo.getPhotoReference(), maxWidth, height, mApiKey);
 
-        if (isViewAttached()) getView().setPhoto(url);
+        getView().setPhoto(url);
     }
 
     private void handleThrowable(Restaurant restaurant, Throwable throwable) {
         RxUtil.dispose(mDisposable);
 
         if (NetworkUtil.isConnectionError(throwable)) {
-
             mBus.post(new EventError(ERROR_CONNECTION, R.string.connection_error_message));
             mDisposable = RxUtil.reconnectDelay(mReconnectDelay)
                     .subscribeOn(Schedulers.io())
@@ -183,6 +185,7 @@ public class RestaurantDetailsPresenter extends BasePresenter<RestaurantDetailsC
                     });
 
         } else if (throwable instanceof OverQueryLimitException) {
+            // get restaurant from local db
             mDisposable = mRestaurantRepository.fetchRestaurant(restaurant.getPlaceId())
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
@@ -192,9 +195,7 @@ public class RestaurantDetailsPresenter extends BasePresenter<RestaurantDetailsC
     }
 
     private void hidePhotoAndReviewContainer() {
-        if (isViewAttached()) {
-            getView().hidePhotosContainer();
-            getView().hideReviewsContainer();
-        }
+        getView().hidePhotosContainer();
+        getView().hideReviewsContainer();
     }
 }

@@ -43,7 +43,7 @@ public class RestaurantRepository implements Repository<RestaurantModel>, Consta
 
     @Inject
     public RestaurantRepository(PlacesApiService apiService, AppDatabase.RestaurantDao restaurantDao,
-            AppDatabase.PhotoDao photoDao, AppDatabase.ReviewDao reviewDao, RxBus bus) {
+                                AppDatabase.PhotoDao photoDao, AppDatabase.ReviewDao reviewDao, RxBus bus) {
         mRestaurantDao = restaurantDao;
         mPhotoDao = photoDao;
         mReviewDao = reviewDao;

@@ -88,6 +88,7 @@ public class NearbyPresenter extends BasePresenter<NearbyContract.View> implemen
             else nearbySearch();
         } else setRestaurant(POSITION_TOP);
 
+        RxUtil.dispose(mCompositeDisposable);
         eventRecyclerViewBottomScrolled();
         eventTurnOnLocation();
     }
@@ -129,6 +130,7 @@ public class NearbyPresenter extends BasePresenter<NearbyContract.View> implemen
     @Override
     protected void onDestroy() {
         RxUtil.dispose(mCompositeDisposable);
+        RxUtil.dispose(mDisposable);
 
         super.onDestroy();
     }
@@ -137,20 +139,21 @@ public class NearbyPresenter extends BasePresenter<NearbyContract.View> implemen
     public void onCurrentLocationPicked(LocationService.Location location) {
         mCurrentLocation = location;
         mSharedPref.setCurrentLocation(location);
-        if (isViewAttached()) {
-            if (!TextUtils.isEmpty(location.getAddress())) {
-                getView().setActionBarTitle(location.getAddress());
-            } else getView().setActionBarTitle(R.string.nearby_text);
-            nearbySearch();
-        }
+
+        if (!TextUtils.isEmpty(location.getAddress())) {
+            getView().setActionBarTitle(location.getAddress());
+        } else getView().setActionBarTitle(R.string.nearby_text);
+        nearbySearch();
     }
 
     @SuppressLint("MissingPermission")
     @Override
     public void fetchCurrentLocation() {
+        RxUtil.dispose(mDisposable);
+
         // TODO handle required permission
         refreshing(true);
-        mLocationService.fetchCurrentLocation()
+        mDisposable = mLocationService.fetchCurrentLocation()
                 .subscribeOn(Schedulers.io())
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .subscribe(location -> {
@@ -209,11 +212,9 @@ public class NearbyPresenter extends BasePresenter<NearbyContract.View> implemen
     private void setRestaurant(int position) {
         mRestaurants = mRestaurantRepository.getRestaurants();
 
-        if (isViewAttached()) {
-            refreshing(false);
-            getView().updateRecyclerView(mRestaurants);
-            getView().scrollToPosition(position);
-        }
+        refreshing(false);
+        getView().updateRecyclerView(mRestaurants);
+        getView().scrollToPosition(position);
     }
 
     private void handleThrowable(Throwable throwable, String method, int position) {
@@ -261,8 +262,6 @@ public class NearbyPresenter extends BasePresenter<NearbyContract.View> implemen
     }
 
     private void refreshing(boolean refreshing) {
-        if (isViewAttached()) {
-            getView().setRefreshing(refreshing);
-        }
+        getView().setRefreshing(refreshing);
     }
 }

@@ -27,6 +27,7 @@ import java.util.List;
 import javax.inject.Inject;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 
@@ -44,7 +45,7 @@ public class MapPresenter extends BasePresenter<MapContract.View> implements Map
 
     private List<Restaurant> mRestaurants;
     private LocationService.Location mCurrentLocation;
-    private Disposable mLocationServiceDisposable;
+    private CompositeDisposable mCompositeDisposable = new CompositeDisposable();
     private Disposable mDisposable;
     private String mApiKey;
     private boolean mMapReady;
@@ -69,15 +70,15 @@ public class MapPresenter extends BasePresenter<MapContract.View> implements Map
         mRestaurants = mRestaurantRepository.getRestaurants();
         mNearbyRadius = mSharedPref.getNearbyRadius();
         mCurrentLocation = mSharedPref.getCurrentLocation();
-        mFirstSelection = true;
-        mMapReady = false;
-        mMarkersAdded = false;
         mZoom = mSharedPref.getMapZoom();
     }
 
     @Override
     public void attachView(MapContract.View view) {
         super.attachView(view);
+        mMapReady = false;
+        mMarkersAdded = false;
+        mFirstSelection = true;
 
         String locationAddress = mCurrentLocation.getAddress();
         int index = AppUtil.indexOf(mNearbyRadius, mNearbyRadiusOptions);
@@ -93,6 +94,7 @@ public class MapPresenter extends BasePresenter<MapContract.View> implements Map
             else nearbySearch(false);
         }
 
+        RxUtil.dispose(mCompositeDisposable);
         eventTurnOnLocation();
     }
 
@@ -105,6 +107,14 @@ public class MapPresenter extends BasePresenter<MapContract.View> implements Map
             case R.id.menu_nearby_fragment_info:
                 break;
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        RxUtil.dispose(mDisposable);
+        RxUtil.dispose(mCompositeDisposable);
+
+        super.onDestroy();
     }
 
     @Override
@@ -126,11 +136,11 @@ public class MapPresenter extends BasePresenter<MapContract.View> implements Map
     @SuppressLint("MissingPermission")
     @Override
     public void fetchCurrentLocation() {
-        RxUtil.dispose(mLocationServiceDisposable);
+        RxUtil.dispose(mDisposable);
         // TODO handle required permission
 
-        if (isViewAttached()) getView().showProgressBar();
-        mLocationServiceDisposable = mLocationService.fetchCurrentLocation()
+        getView().showProgressBar();
+        mDisposable = mLocationService.fetchCurrentLocation()
                 .subscribeOn(Schedulers.io())
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .subscribe(location -> {
@@ -188,7 +198,7 @@ public class MapPresenter extends BasePresenter<MapContract.View> implements Map
         String type = Constants.AppConstants.PLACE_TYPE_RESTAURANT;
         String location = mCurrentLocation.latLngString();
 
-        if (isViewAttached()) getView().showProgressBar();
+        getView().showProgressBar();
         mDisposable = mRestaurantRepository.nearbySearch(location, radius, type, mApiKey)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -208,7 +218,7 @@ public class MapPresenter extends BasePresenter<MapContract.View> implements Map
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(placeNearby -> setPlaceNearby(placeNearby, false),
                             this::onError);
-        } else if (isViewAttached()) getView().hideProgressBar();
+        } else getView().hideProgressBar();
     }
 
     private void setPlaceNearby(PlaceNearby nearby, boolean clearMap) {
@@ -222,30 +232,28 @@ public class MapPresenter extends BasePresenter<MapContract.View> implements Map
         mRestaurants = mRestaurantRepository.getRestaurants();
         if (mMapReady) {
 
-            if (isViewAttached()) {
-                mMarkersAdded = true;
-                String displayed = mResourceUtil.getString(R.string.displayed_text);
-                String restaurant = mResourceUtil.getString(R.string.restaurants_text);
-                String message = displayed.concat(" ")
-                        .concat(String.valueOf(mRestaurants.size()))
-                        .concat(" ")
-                        .concat(restaurant);
+            mMarkersAdded = true;
+            String displayed = mResourceUtil.getString(R.string.displayed_text);
+            String restaurant = mResourceUtil.getString(R.string.restaurants_text);
+            String message = displayed.concat(" ")
+                    .concat(String.valueOf(mRestaurants.size()))
+                    .concat(" ")
+                    .concat(restaurant);
 
-                if (clearMap) getView().clearMap();
+            if (clearMap) getView().clearMap();
 
-                getView().addMarkers(mRestaurants);
-                getView().showSnackBar(message);
-            }
+            getView().addMarkers(mRestaurants);
+            getView().showSnackBar(message);
         }
     }
 
     private void eventTurnOnLocation() {
-        mBus.filteredFlowable(EventTurnOnLocation.class)
+        mCompositeDisposable.add(mBus.filteredFlowable(EventTurnOnLocation.class)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(turnOnLocationEvent -> {
                     if (turnOnLocationEvent.isLocationEventTurnedOn()) fetchCurrentLocation();
                     // TODO do something if user did not turn on location
-                });
+                }));
     }
 
     private void onError(Throwable throwable) {
@@ -263,6 +271,8 @@ public class MapPresenter extends BasePresenter<MapContract.View> implements Map
                         if (TextUtils.isEmpty(mNextPageToken)) nearbySearch(mClearMap);
                         else nearbySearchWithToken(mNextPageToken);
                     });
-        } throwable.printStackTrace();
+        }
+
+        throwable.printStackTrace();
     }
 }

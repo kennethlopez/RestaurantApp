@@ -65,16 +65,6 @@ public class SharedPrefUtil implements Constants.SharedPrefConstants {
         return mSharedPreferences.getBoolean(PREF_DISPLAYED_OVER_QUERY_LIMIT_DIALOG, false);
     }
 
-    public void setDisplayedConnectionErrorDialog(boolean displayed) {
-        SharedPreferences.Editor editor = mSharedPreferences.edit();
-        editor.putBoolean(PREF_DISPLAYED_CONNECTION_ERROR_DIALOG, displayed);
-        editor.apply();
-    }
-
-    public boolean displayedConnectionErrorDialog() {
-        return mSharedPreferences.getBoolean(PREF_DISPLAYED_CONNECTION_ERROR_DIALOG, false);
-    }
-
     private String getLocationAddress() {
         return mSharedPreferences.getString(PREF_LOCATION_ADDRESS, null);
     }
