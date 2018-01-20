@@ -122,14 +122,19 @@ public class RestaurantRepository implements Repository<RestaurantModel>, Consta
     }
 
     @Transaction
-    public Flowable<Restaurant> fetchRestaurants(String[] placeIds) {
+    public Flowable<List<Restaurant>> fetchRestaurants(String[] placeIds) {
         return mRestaurantDao.getRestaurants(placeIds)
-                .switchMap(Flowable::fromIterable)
-                .map(restaurantModel -> {
-                    List<PhotoModel> photoModels = mPhotoDao.getPhotos(restaurantModel.getId());
-                    List<ReviewModel> reviewModels = mReviewDao.getReviews(restaurantModel.getId());
-                    return ConverterUtil.fromRestaurantModel(restaurantModel, photoModels,
-                            reviewModels);
+                .map(restaurantModels -> {
+                    List<Restaurant> restaurants = new ArrayList<>();
+                    for (RestaurantModel restaurantModel : restaurantModels) {
+                        List<PhotoModel> photoModels =
+                                mPhotoDao.getPhotos(restaurantModel.getId());
+                        List<ReviewModel> reviewModels =
+                                mReviewDao.getReviews(restaurantModel.getId());
+                        restaurants.add(ConverterUtil.fromRestaurantModel(restaurantModel,
+                                photoModels, reviewModels));
+                    }
+                    return restaurants;
                 });
     }
 

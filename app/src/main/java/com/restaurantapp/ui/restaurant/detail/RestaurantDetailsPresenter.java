@@ -73,8 +73,8 @@ public class RestaurantDetailsPresenter extends BasePresenter<RestaurantDetailsC
     @Override
     protected void onCreateOptionsMenu() {
         super.onCreateOptionsMenu();
-        setFavorite();
         mIsOptionsMenuCreated = true;
+        setFavorite();
     }
 
     @Override

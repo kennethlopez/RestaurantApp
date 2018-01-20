@@ -4,6 +4,7 @@ package com.restaurantapp.ui.home.fragment.favorites;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
@@ -12,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 
 import com.restaurantapp.R;
 import com.restaurantapp.data.api.response.Restaurant;
@@ -83,9 +85,17 @@ public class FavoritesFragment extends BaseFragment implements FavoritesContract
     }
 
     @Override
-    public void updateRecyclerView(List<Restaurant> places) {
-        mAdapter.setData(places);
+    public void updateRecyclerView(List<Restaurant> restaurants) {
+        mAdapter.setData(restaurants);
         mAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void displayEmptySnackBar(int messageResId) {
+        Snackbar snackbar = Snackbar.make(mParentLayout, getResources().getString(messageResId),
+                Snackbar.LENGTH_SHORT);
+        snackbar.setAction(R.string.dismiss_text, view -> snackbar.dismiss());
+        snackbar.show();
     }
 
     @Override
@@ -97,4 +107,5 @@ public class FavoritesFragment extends BaseFragment implements FavoritesContract
     }
 
     @BindView(R.id.fragment_favorites_recycler_view) RecyclerView mRecyclerView;
+    @BindView(R.id.fragment_favorites_parent_container) RelativeLayout mParentLayout;
 }

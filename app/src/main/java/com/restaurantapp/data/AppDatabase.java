@@ -45,8 +45,10 @@ public abstract class AppDatabase extends RoomDatabase {
     public interface RestaurantDao extends BaseDao<RestaurantModel> {
         @Query("select * from restaurants where place_id = :placeId")
         Flowable<RestaurantModel> getRestaurant(String placeId);
+
         @Query("select * from restaurants")
         Flowable<List<RestaurantModel>> getRestaurants();
+
         @Query("select * from restaurants where place_id in(:placeIds)")
         Flowable<List<RestaurantModel>> getRestaurants(String[] placeIds);
     }

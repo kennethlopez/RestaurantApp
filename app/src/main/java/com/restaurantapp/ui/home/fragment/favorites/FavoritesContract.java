@@ -12,7 +12,9 @@ public interface FavoritesContract {
 
         void gotoRestaurantsDetails(Restaurant restaurantResponse);
 
-        void updateRecyclerView(List<Restaurant> places);
+        void updateRecyclerView(List<Restaurant> restaurants);
+
+        void displayEmptySnackBar(int messageResId);
     }
 
     interface Presenter {

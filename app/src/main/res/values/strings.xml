@@ -37,4 +37,5 @@
     <string name="displayed_text">Displayed</string>
     <string name="restaurants_text">restaurants</string>
     <string name="dismiss_text">Dismiss</string>
+    <string name="empty_favorites_text">Empty favorites</string>
 </resources>
