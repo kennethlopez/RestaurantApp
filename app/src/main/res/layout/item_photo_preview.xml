@@ -10,5 +10,6 @@
     <ImageView
         android:id="@+id/item_photo_preview_image"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:contentDescription="@null" />
 </FrameLayout>
