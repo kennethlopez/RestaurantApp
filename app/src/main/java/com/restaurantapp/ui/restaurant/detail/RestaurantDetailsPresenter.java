@@ -105,6 +105,7 @@ public class RestaurantDetailsPresenter extends BasePresenter<RestaurantDetailsC
                 setPhotoFrom(restaurant.getPhotos());
 
                 if (photos.size() > 1) hasPhotos = true;
+                else getView().hidePhotosContainer();
 
             } else if (isViewAttached()) getView().hidePhotosContainer();
 
