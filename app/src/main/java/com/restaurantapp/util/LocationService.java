@@ -187,8 +187,8 @@ public final class LocationService {
             return mLatLng.latitude + "," + mLatLng.longitude;
         }
 
-        public int kmDistanceFrom(Location location) {
-            return (int) distanceFrom(location.getLat(), location.getLng()) / 1000;
+        public double kmDistanceFrom(Location location) {
+            return distanceFrom(location.getLat(), location.getLng()) / 1000;
         }
 
         public double distanceFrom(double lat, double lng) {

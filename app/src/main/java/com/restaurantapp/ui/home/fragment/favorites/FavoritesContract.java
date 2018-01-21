@@ -10,14 +10,34 @@ public interface FavoritesContract {
     interface View extends BaseView {
         void initRecyclerView(List<Restaurant> restaurants);
 
+        void setSearchActionListener();
+
+        void onSearchTextChanged(CharSequence charSequence, int start, int before, int count);
+
+        String getSearchText();
+
+        void emptySearchText();
+
         void gotoRestaurantsDetails(Restaurant restaurantResponse);
 
         void updateRecyclerView(List<Restaurant> restaurants);
 
         void displayEmptySnackBar(int messageResId);
+
+        void hideKeyboard();
+
+        void showSearchClose();
+
+        void hideSearchClose();
     }
 
     interface Presenter {
         void onRecyclerViewItemClick(int position);
+
+        void onSearchTextChanged(CharSequence charSequence, int start, int before, int count);
+
+        void actionSearch();
+
+        void onClickSearchClose();
     }
 }

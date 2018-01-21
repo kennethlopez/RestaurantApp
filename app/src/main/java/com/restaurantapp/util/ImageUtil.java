@@ -37,8 +37,8 @@ public class ImageUtil {
         setImage(context, resId, 70, imageView);
     }
 
-    public static void setImage(Context context, SimpleTarget<Drawable> target, String url,
-                                int cornerDp) {
+    private static void setImage(Context context, SimpleTarget<Drawable> target, String url,
+                                 int cornerDp) {
         RequestOptions options = new RequestOptions()
                 .centerCrop()
                 .transform(new RoundedCorners(AppUtil.dpToPx(cornerDp)));
@@ -52,8 +52,8 @@ public class ImageUtil {
                 .into(target);
     }
 
-    public static void setImage(Context context, ImageView view, int placeHolderId,
-                                String url, int cornerDp) {
+    private static void setImage(Context context, ImageView view, int placeHolderId,
+                                 String url, int cornerDp) {
         RequestOptions options = new RequestOptions()
                 .centerCrop()
                 .transform(new RoundedCorners(AppUtil.dpToPx(cornerDp)));
@@ -67,7 +67,7 @@ public class ImageUtil {
         else request.into(view);
     }
 
-    public static void setImage(Context context, int resId, int alpha, ImageView imageView) {
+    private static void setImage(Context context, int resId, int alpha, ImageView imageView) {
         GlideApp.with(context)
                 .load(resId)
                 .into(new SimpleTarget<Drawable>() {

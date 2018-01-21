@@ -1,12 +1,15 @@
 package com.restaurantapp.util;
 
 
+import android.content.Context;
 import android.content.res.Resources;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.AppCompatTextView;
+import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.RatingBar;
 
 import java.util.List;
@@ -23,6 +26,10 @@ public final class AppUtil {
         return km * 1000;
     }
 
+    public static long toMilliseconds(double second) {
+        return (long) (second * 1000);
+    }
+
     public static String getGooglePhotosLink(String reference, int maxWidth, int maxHeight,
                                              String apiKey) {
         return Constants.AppConstants.PLACES_API_SERVICE_HOST + "photo?maxwidth=" + maxWidth
@@ -35,8 +42,29 @@ public final class AppUtil {
         return 0;
     }
 
-    public static long toMilliseconds(double second) {
-        return (long) (second * 1000);
+    static String favoritesToString(List<String> favorites) {
+        boolean first = true;
+        String favoritesString = "";
+        for (String favorite : favorites) {
+            if (first) {
+                first = false;
+                favoritesString = favorite;
+            } else {
+                favoritesString = favoritesString.concat(Constants.AppConstants.FAVORITES_SEPARATOR)
+                        .concat(favorite);
+            }
+        }
+        return favoritesString;
+    }
+
+    public static boolean overQueryLimit(String status) {
+        return status.contentEquals(Constants.AppConstants.OVER_QUERY_LIMIT);
+    }
+
+    public static void hideKeyboardFrom(Context context, View view) {
+        InputMethodManager imm =
+                (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (imm != null) imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
     }
 
     public static void setRating(RatingBar ratingBar, AppCompatTextView ratingText, float rating) {
@@ -64,24 +92,5 @@ public final class AppUtil {
         };
 
         handler.post(runnable);
-    }
-
-    public static String favoritesToString(List<String> favorites) {
-        boolean first = true;
-        String favoritesString = "";
-        for (String favorite : favorites) {
-            if (first) {
-                first = false;
-                favoritesString = favorite;
-            } else {
-                favoritesString = favoritesString.concat(Constants.AppConstants.FAVORITES_SEPARATOR)
-                        .concat(favorite);
-            }
-        }
-        return favoritesString;
-    }
-
-    public static boolean overQueryLimit(String status) {
-        return status.contentEquals(Constants.AppConstants.OVER_QUERY_LIMIT);
     }
 }

@@ -3,10 +3,66 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/fragment_favorites_parent_container">
+    <android.support.v7.widget.CardView
+        android:id="@+id/fragment_favorites_search_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_gravity="center_vertical"
+            android:padding="8dp">
+            <ImageView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_search_black_24dp"
+                android:alpha="0.5"
+                android:layout_weight="0.1"
+                android:contentDescription="@null" />
+            <android.support.v7.widget.AppCompatEditText
+                android:id="@+id/fragment_favorites_search_text"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="6dp"
+                android:layout_marginStart="6dp"
+                android:layout_marginRight="6dp"
+                android:layout_marginEnd="6dp"
+                android:hint="@string/search_text"
+                android:lines="1"
+                android:maxLines="1"
+                android:imeOptions="actionSearch"
+                android:inputType="text"
+                android:background="@android:color/white"
+                android:layout_weight="1"/>
+            <ImageView
+                android:id="@+id/fragment_favorites_search_close"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_close_black_24dp"
+                android:alpha="0.5"
+                android:layout_weight="0.1"
+                android:clickable="true"
+                android:focusable="true"
+                android:contentDescription="@null"
+                android:visibility="gone"/>
+        </LinearLayout>
+    </android.support.v7.widget.CardView>
     <android.support.v7.widget.RecyclerView
         android:id="@+id/fragment_favorites_recycler_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_below="@id/fragment_favorites_search_container"
         android:layout_marginLeft="@dimen/activity_horizontal_margin"
         android:layout_marginRight="@dimen/activity_horizontal_margin"/>
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/powered_by_google_light"
+        android:layout_below="@id/fragment_favorites_search_container"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="2dp"
+        android:layout_marginRight="5dp"
+        android:layout_marginEnd="5dp" />
 </RelativeLayout>

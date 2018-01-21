@@ -33,7 +33,6 @@ public class RestaurantViewHolder extends RecyclerView.ViewHolder {
         ButterKnife.bind(this, itemView);
 
         mContext = context;
-//        init();
     }
 
     public void setRestaurant(Restaurant restaurant, String apiKey, SimpleTarget<Drawable> target) {
@@ -62,15 +61,6 @@ public class RestaurantViewHolder extends RecyclerView.ViewHolder {
         setPhoneNumber(restaurant.getFormattedPhoneNumber());
     }
 
-//    public void init() {
-//        mName.setText("");
-//        mRatingBar.setRating(0.0f);
-//        mRatingText.setText("");
-//        mTastesContainer.removeAllViews();
-//        mAddress.setText("");
-//        mPhoneNumber.setText("");
-//    }
-
     public void setTarget(SimpleTarget<Drawable> target) {
         mTarget = target;
     }
@@ -82,10 +72,6 @@ public class RestaurantViewHolder extends RecyclerView.ViewHolder {
     public void setImage(String url) {
         if (mTarget != null) ImageUtil.setImage(mContext, mTarget, url);
         else ImageUtil.setImage(mContext, mImage, url);
-    }
-
-    public void setImage(int resId) {
-        ImageUtil.setImage(mContext, resId, mImage);
     }
 
     public void setImage(Drawable drawable) {

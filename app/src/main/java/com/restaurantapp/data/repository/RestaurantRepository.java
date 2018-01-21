@@ -2,6 +2,7 @@ package com.restaurantapp.data.repository;
 
 
 import android.arch.persistence.room.Transaction;
+import android.text.TextUtils;
 
 import com.restaurantapp.R;
 import com.restaurantapp.data.AppDatabase;
@@ -121,21 +122,9 @@ public class RestaurantRepository implements Repository<RestaurantModel>, Consta
                 });
     }
 
-    @Transaction
     public Flowable<List<Restaurant>> fetchRestaurants(String[] placeIds) {
         return mRestaurantDao.getRestaurants(placeIds)
-                .map(restaurantModels -> {
-                    List<Restaurant> restaurants = new ArrayList<>();
-                    for (RestaurantModel restaurantModel : restaurantModels) {
-                        List<PhotoModel> photoModels =
-                                mPhotoDao.getPhotos(restaurantModel.getId());
-                        List<ReviewModel> reviewModels =
-                                mReviewDao.getReviews(restaurantModel.getId());
-                        restaurants.add(ConverterUtil.fromRestaurantModel(restaurantModel,
-                                photoModels, reviewModels));
-                    }
-                    return restaurants;
-                });
+                .map(this::queryRestaurants);
     }
 
     @Transaction
@@ -148,6 +137,20 @@ public class RestaurantRepository implements Repository<RestaurantModel>, Consta
                     return ConverterUtil.fromRestaurantModel(restaurantModel, photoModels,
                             reviewModels);
                 });
+    }
+
+    @Transaction
+    private List<Restaurant> queryRestaurants(List<RestaurantModel> restaurantModels) {
+        List<Restaurant> restaurants = new ArrayList<>();
+        for (RestaurantModel restaurantModel : restaurantModels) {
+            List<PhotoModel> photoModels =
+                    mPhotoDao.getPhotos(restaurantModel.getId());
+            List<ReviewModel> reviewModels =
+                    mReviewDao.getReviews(restaurantModel.getId());
+            restaurants.add(ConverterUtil.fromRestaurantModel(restaurantModel,
+                    photoModels, reviewModels));
+        }
+        return restaurants;
     }
 
     private Restaurant saveResult(PlaceDetails placeDetails) {
