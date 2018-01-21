@@ -12,7 +12,7 @@ public interface FavoritesContract {
 
         void initSwipeRefresh();
 
-        void setSearchActionListener();
+        void initSearch();
 
         void onSearchTextChanged(CharSequence charSequence, int start, int before, int count);
 

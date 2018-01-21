@@ -48,7 +48,7 @@ public class FavoritesPresenter extends BasePresenter<FavoritesContract.View> im
         super.attachView(view);
         getView().initRecyclerView(mRestaurants);
         getView().initSwipeRefresh();
-        getView().setSearchActionListener();
+        getView().initSearch();
         mStart = true;
         mFavorites = mSharedPrefUtil.getFavoritesArray();
     }
@@ -120,6 +120,7 @@ public class FavoritesPresenter extends BasePresenter<FavoritesContract.View> im
     private void displayRestaurants(List<Restaurant> restaurants) {
         if (mStart) mStart = false;
 
+        sortByDistance(restaurants);
         mDisplayedRestaurants = restaurants;
         getView().updateRecyclerView(restaurants);
     }
@@ -134,7 +135,12 @@ public class FavoritesPresenter extends BasePresenter<FavoritesContract.View> im
                 restaurants.add(restaurant);
             }
         }
+        sortByDistance(restaurants);
 
+        return restaurants;
+    }
+
+    private void sortByDistance(List<Restaurant> restaurants) {
         Collections.sort(restaurants, (restaurant, t1) -> {
             LocationService.Location currentLocation = mSharedPrefUtil.getCurrentLocation();
             double lat1 = restaurant.getGeometry()
@@ -159,8 +165,6 @@ public class FavoritesPresenter extends BasePresenter<FavoritesContract.View> im
             else if (distance1 < distance1) return -1;
             return 0;
         });
-
-        return restaurants;
     }
 
     @Override

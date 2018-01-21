@@ -137,7 +137,7 @@ public class RestaurantDetailsPresenter extends BasePresenter<RestaurantDetailsC
         if (setPhoto) photos = setPhotoFrom(restaurant.getPhotos());
         else photos = removeFirstAvailablePhoto(restaurant.getPhotos());
 
-        if (photos.size() > 0) getView().setPhotos(photos);
+        if (photos != null && photos.size() > 0) getView().setPhotos(photos);
         else getView().hidePhotosContainer();
 
         setFavorite();

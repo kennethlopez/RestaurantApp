@@ -101,7 +101,7 @@ public class FavoritesFragment extends BaseFragment implements FavoritesContract
     }
 
     @Override
-    public void setSearchActionListener() {
+    public void initSearch() {
         mSearch.setOnEditorActionListener(((textView, i, keyEvent) -> {
             if (i == EditorInfo.IME_ACTION_SEARCH) {
                 mPresenter.actionSearch();
