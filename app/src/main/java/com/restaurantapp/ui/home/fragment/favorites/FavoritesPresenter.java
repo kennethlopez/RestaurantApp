@@ -73,18 +73,21 @@ public class FavoritesPresenter extends BasePresenter<FavoritesContract.View> im
         if (mStart || favoritesUpdated(favorites)) {
             mFavorites = favorites;
 
-            getView().setRefreshing(true);
-            mDisposable = mRestaurantRepository.fetchRestaurants(favorites)
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(restaurants -> {
-                        mRestaurants = restaurants;
+            if (mStart && mFavorites.length == 0) displayEmptySnackBar();
+            else {
+                getView().setRefreshing(true);
+                mDisposable = mRestaurantRepository.fetchRestaurants(favorites)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(restaurants -> {
+                            mRestaurants = restaurants;
 
-                        getView().setRefreshing(false);
-                        if (!TextUtils.isEmpty(mFilter)) {
-                            displayRestaurants(getFilteredRestaurants(mFilter));
-                        } else displayRestaurants(restaurants);
-                    }, Throwable::printStackTrace);
+                            getView().setRefreshing(false);
+                            if (!TextUtils.isEmpty(mFilter)) {
+                                displayRestaurants(getFilteredRestaurants(mFilter));
+                            } else displayRestaurants(restaurants);
+                        }, Throwable::printStackTrace);
+            }
         }
     }
 
@@ -108,7 +111,10 @@ public class FavoritesPresenter extends BasePresenter<FavoritesContract.View> im
                 displayRestaurants(getFilteredRestaurants(mFilter));
             } else displayRestaurants(mRestaurants);
 
-        } else getView().displayEmptySnackBar(R.string.empty_favorites_text);
+        } else {
+            mStart = false;
+            displayEmptySnackBar();
+        }
     }
 
     private void displayRestaurants(List<Restaurant> restaurants) {
@@ -165,6 +171,10 @@ public class FavoritesPresenter extends BasePresenter<FavoritesContract.View> im
     @Override
     public void onClickSearchClose() {
         getView().emptySearchText();
+    }
+
+    private void displayEmptySnackBar() {
+        getView().displayEmptySnackBar(R.string.empty_favorites_text);
     }
 
     private boolean favoritesUpdated(String[] favorites) {

@@ -3,6 +3,7 @@ package com.restaurantapp.util;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.text.TextUtils;
 
 import com.restaurantapp.injection.ApplicationContext;
 
@@ -70,7 +71,10 @@ public class SharedPrefUtil implements Constants.SharedPrefConstants {
     }
 
     public String[] getFavoritesArray() {
-        return getFavoriteString().split(Constants.AppConstants.FAVORITES_SEPARATOR);
+        String[] favorites = getFavoriteString().split(Constants.AppConstants.FAVORITES_SEPARATOR);
+        if (favorites.length > 0 && !TextUtils.isEmpty(favorites[0])) return favorites;
+
+        return new String[]{};
     }
 
     public void addFavorite(String placeId) {

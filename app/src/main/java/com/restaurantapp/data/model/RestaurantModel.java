@@ -14,8 +14,8 @@ import com.restaurantapp.data.api.response.Fields;
         indices = @Index(value = {RestaurantModel.PLACE_ID},
         unique = true))
 public class RestaurantModel implements Fields.RestaurantFields, Fields.LocationFields {
-    public static final String ID = "_id";
-    public static final String RESTAURANT_ID = "_restaurant_id";
+    static final String ID = "_id";
+    static final String RESTAURANT_ID = "_restaurant_id";
     public static final String PLACE_ID = "place_id";
 
     @PrimaryKey(autoGenerate = true)
@@ -32,9 +32,9 @@ public class RestaurantModel implements Fields.RestaurantFields, Fields.Location
     @ColumnInfo(name = "lng")
     private double lng;
 
-    @SerializedName(PLACE_ID)
+    @SerializedName(Fields.RestaurantFields.PLACE_ID)
     @Expose
-    @ColumnInfo(name = "place_id")
+    @ColumnInfo(name = PLACE_ID)
     private String placeId;
 
     @SerializedName(NAME)
