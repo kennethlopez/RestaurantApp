@@ -47,6 +47,7 @@ public class FavoritesPresenter extends BasePresenter<FavoritesContract.View> im
     public void attachView(FavoritesContract.View view) {
         super.attachView(view);
         getView().initRecyclerView(mRestaurants);
+        getView().initSwipeRefresh();
         getView().setSearchActionListener();
         mStart = true;
         mFavorites = mSharedPrefUtil.getFavoritesArray();
@@ -72,11 +73,14 @@ public class FavoritesPresenter extends BasePresenter<FavoritesContract.View> im
         if (mStart || favoritesUpdated(favorites)) {
             mFavorites = favorites;
 
+            getView().setRefreshing(true);
             mDisposable = mRestaurantRepository.fetchRestaurants(favorites)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(restaurants -> {
                         mRestaurants = restaurants;
+
+                        getView().setRefreshing(false);
                         if (!TextUtils.isEmpty(mFilter)) {
                             displayRestaurants(getFilteredRestaurants(mFilter));
                         } else displayRestaurants(restaurants);

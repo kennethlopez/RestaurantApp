@@ -10,11 +10,11 @@ public interface FavoritesContract {
     interface View extends BaseView {
         void initRecyclerView(List<Restaurant> restaurants);
 
+        void initSwipeRefresh();
+
         void setSearchActionListener();
 
         void onSearchTextChanged(CharSequence charSequence, int start, int before, int count);
-
-        String getSearchText();
 
         void emptySearchText();
 
@@ -23,6 +23,8 @@ public interface FavoritesContract {
         void updateRecyclerView(List<Restaurant> restaurants);
 
         void displayEmptySnackBar(int messageResId);
+
+        void setRefreshing(boolean refreshing);
 
         void hideKeyboard();
 

@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.AppCompatEditText;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.DividerItemDecoration;
@@ -91,6 +92,15 @@ public class FavoritesFragment extends BaseFragment implements FavoritesContract
     }
 
     @Override
+    public void initSwipeRefresh() {
+        mSwipeRefresh.setColorSchemeResources(R.color.colorPrimary,
+                R.color.colorAccent,
+                android.R.color.holo_orange_dark,
+                android.R.color.holo_blue_dark);
+        mSwipeRefresh.setEnabled(false);
+    }
+
+    @Override
     public void setSearchActionListener() {
         mSearch.setOnEditorActionListener(((textView, i, keyEvent) -> {
             if (i == EditorInfo.IME_ACTION_SEARCH) {
@@ -109,11 +119,6 @@ public class FavoritesFragment extends BaseFragment implements FavoritesContract
     @Override
     public void onSearchTextChanged(CharSequence charSequence, int start, int before, int count) {
         mPresenter.onSearchTextChanged(charSequence, start, before, count);
-    }
-
-    @Override
-    public String getSearchText() {
-        return mSearch.getText().toString();
     }
 
     @OnClick(R.id.fragment_favorites_search_close)
@@ -138,6 +143,11 @@ public class FavoritesFragment extends BaseFragment implements FavoritesContract
                 Snackbar.LENGTH_SHORT);
         snackbar.setAction(R.string.dismiss_text, view -> snackbar.dismiss());
         snackbar.show();
+    }
+
+    @Override
+    public void setRefreshing(boolean refreshing) {
+        mSwipeRefresh.setRefreshing(refreshing);
     }
 
     @Override
@@ -167,4 +177,5 @@ public class FavoritesFragment extends BaseFragment implements FavoritesContract
     @BindView(R.id.fragment_favorites_parent_container) RelativeLayout mParentLayout;
     @BindView(R.id.fragment_favorites_search_close) ImageView mSearchClose;
     @BindView(R.id.fragment_favorites_search_text) AppCompatEditText mSearch;
+    @BindView(R.id.fragment_favorites_swipe_refresh) SwipeRefreshLayout mSwipeRefresh;
 }
