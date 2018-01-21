@@ -35,7 +35,6 @@ public class FavoritesPresenter extends BasePresenter<FavoritesContract.View> im
     private Disposable mDisposable;
     private String mFilter;
     private boolean mStart;
-    private boolean mQueried;
 
     @Inject
     FavoritesPresenter (RestaurantRepository restaurantRepository, SharedPrefUtil sharedPrefUtil) {
@@ -72,7 +71,6 @@ public class FavoritesPresenter extends BasePresenter<FavoritesContract.View> im
         String[] favorites = mSharedPrefUtil.getFavoritesArray();
         if (mStart || favoritesUpdated(favorites)) {
             mFavorites = favorites;
-            mQueried = true;
 
             mDisposable = mRestaurantRepository.fetchRestaurants(favorites)
                     .subscribeOn(Schedulers.io())
@@ -93,22 +91,20 @@ public class FavoritesPresenter extends BasePresenter<FavoritesContract.View> im
 
     @Override
     public void onSearchTextChanged(CharSequence charSequence, int start, int before, int count) {
-        mQueried = false;
-
         if (count > 0) getView().showSearchClose();
         else getView().hideSearchClose();
 
-        if (count > 2) {
-            mFilter = charSequence.toString().toLowerCase();
+        if (count > 2) mFilter = charSequence.toString().toLowerCase();
+        else mFilter = "";
 
-            // happens when user changes tab and leave texts on search then go back
-            if (mFavorites.length > 0 && mRestaurants.size() == 0) displayFavorites();
-            else displayRestaurants(getFilteredRestaurants(mFilter));
+        if (mFavorites.length > 0) {
 
-        } else {
-            mFilter = "";
-            displayRestaurants(mRestaurants);
-        }
+            if (mRestaurants.size() == 0) displayFavorites();
+            else if (!TextUtils.isEmpty(mFilter)) {
+                displayRestaurants(getFilteredRestaurants(mFilter));
+            } else displayRestaurants(mRestaurants);
+
+        } else getView().displayEmptySnackBar(R.string.empty_favorites_text);
     }
 
     private void displayRestaurants(List<Restaurant> restaurants) {
@@ -116,9 +112,6 @@ public class FavoritesPresenter extends BasePresenter<FavoritesContract.View> im
 
         mDisplayedRestaurants = restaurants;
         getView().updateRecyclerView(restaurants);
-        if (mQueried && restaurants.isEmpty()) {
-            getView().displayEmptySnackBar(R.string.empty_favorites_text);
-        }
     }
 
     private List<Restaurant> getFilteredRestaurants(String filter) {
