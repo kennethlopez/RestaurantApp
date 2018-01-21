@@ -31,6 +31,7 @@ public class FavoritesPresenter extends BasePresenter<FavoritesContract.View> im
     private SharedPrefUtil mSharedPrefUtil;
     private String[] mFavorites;
     private List<Restaurant> mRestaurants = new ArrayList<>();
+    private List<Restaurant> mDisplayedRestaurants;
     private Disposable mDisposable;
     private String mFilter;
     private boolean mStart;
@@ -80,7 +81,6 @@ public class FavoritesPresenter extends BasePresenter<FavoritesContract.View> im
                         mRestaurants = restaurants;
                         if (!TextUtils.isEmpty(mFilter)) {
                             displayRestaurants(getFilteredRestaurants(mFilter));
-                            mFilter = "";
                         } else displayRestaurants(restaurants);
                     }, Throwable::printStackTrace);
         }
@@ -88,7 +88,7 @@ public class FavoritesPresenter extends BasePresenter<FavoritesContract.View> im
 
     @Override
     public void onRecyclerViewItemClick(int position) {
-        getView().gotoRestaurantsDetails(mRestaurants.get(position));
+        getView().gotoRestaurantsDetails(mDisplayedRestaurants.get(position));
     }
 
     @Override
@@ -99,20 +99,22 @@ public class FavoritesPresenter extends BasePresenter<FavoritesContract.View> im
         else getView().hideSearchClose();
 
         if (count > 2) {
-            String filter = charSequence.toString().toLowerCase();
+            mFilter = charSequence.toString().toLowerCase();
 
             // happens when user changes tab and leave texts on search then go back
-            if (mFavorites.length > 0 && mRestaurants.size() == 0) {
-                mFilter = filter;
-                displayFavorites();
-            } else displayRestaurants(getFilteredRestaurants(filter));
+            if (mFavorites.length > 0 && mRestaurants.size() == 0) displayFavorites();
+            else displayRestaurants(getFilteredRestaurants(mFilter));
 
-        } else displayRestaurants(mRestaurants);
+        } else {
+            mFilter = "";
+            displayRestaurants(mRestaurants);
+        }
     }
 
     private void displayRestaurants(List<Restaurant> restaurants) {
         if (mStart) mStart = false;
 
+        mDisplayedRestaurants = restaurants;
         getView().updateRecyclerView(restaurants);
         if (mQueried && restaurants.isEmpty()) {
             getView().displayEmptySnackBar(R.string.empty_favorites_text);
