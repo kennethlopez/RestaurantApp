@@ -26,7 +26,7 @@ public class MapInfoWindowAdapter implements GoogleMap.InfoWindowAdapter {
     private String mApiKey;
     private String mDisplayedMarkerId = "";
 
-    MapInfoWindowAdapter(Context context, Hashtable<String, Boolean> markerSet,
+    public MapInfoWindowAdapter(Context context, Hashtable<String, Boolean> markerSet,
                                 Hashtable<String, Restaurant> restaurantSet, String apiKey) {
         mContext = context;
         mMarkerSet = markerSet;

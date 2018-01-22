@@ -4,7 +4,7 @@ package com.restaurantapp.data.api.response;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class PlaceDetails implements Fields {
+public class PlaceDetails implements ResponseFields, ResponseFields.PlaceFields {
     @SerializedName(RESULT)
     @Expose
     private Restaurant result;

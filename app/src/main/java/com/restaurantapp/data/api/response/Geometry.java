@@ -5,7 +5,7 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 
-public class Geometry implements Fields.GeometryFields {
+public class Geometry implements ResponseFields.GeometryFields {
     @SerializedName(LOCATION)
     @Expose
     private Location location;
@@ -22,7 +22,7 @@ public class Geometry implements Fields.GeometryFields {
         return location;
     }
 
-    public static class Location implements Fields.LocationFields {
+    public static class Location implements ResponseFields.LocationFields {
         @SerializedName(LAT)
         @Expose
         private double lat;

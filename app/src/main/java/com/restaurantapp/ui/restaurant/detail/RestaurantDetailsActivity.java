@@ -24,8 +24,10 @@ import com.restaurantapp.data.api.response.Restaurant;
 import com.restaurantapp.data.api.response.Review;
 import com.restaurantapp.ui.base.BaseActivity;
 import com.restaurantapp.ui.helper.RecyclerTouchListener;
+import com.restaurantapp.util.Constants;
 import com.restaurantapp.util.ImageUtil;
 import com.restaurantapp.util.ResourceUtil;
+import com.restaurantapp.util.RxBus;
 
 import java.util.List;
 
@@ -34,13 +36,14 @@ import javax.inject.Inject;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class RestaurantDetailsActivity extends BaseActivity implements RestaurantDetailsContract.View  {
-    public static final String KEY_PLACE_JSON = "KEY_PLACE_JSON";
+public class RestaurantDetailsActivity extends BaseActivity implements
+        RestaurantDetailsContract.View, Constants.BundleKeys {
 
     @Inject RestaurantDetailsPresenter mPresenter;
     @Inject PhotoListAdapter mPhotoListAdapter;
     @Inject ReviewListAdapter mReviewListAdapter;
     @Inject ResourceUtil mResourceUtil;
+    @Inject RxBus mBus;
 
     private MenuItem mFavoritesMenuItem;
 
@@ -69,6 +72,7 @@ public class RestaurantDetailsActivity extends BaseActivity implements Restauran
         String json = args.getString(KEY_PLACE_JSON);
         Restaurant restaurant = new Gson().fromJson(json, Restaurant.class);
         mPresenter.setPlaceResponse(restaurant, mResourceUtil.getGoogleApiKey());
+        mPresenter.setApplicationWideBus(mBus);
     }
 
     @Override
@@ -179,6 +183,11 @@ public class RestaurantDetailsActivity extends BaseActivity implements Restauran
     @Override
     public void setFavoritesMenuItemTint(int colorResId) {
         ImageUtil.setTint(this, mFavoritesMenuItem, colorResId);
+    }
+
+    @Override
+    public void closeActivity() {
+        this.finish();
     }
 
     @Override

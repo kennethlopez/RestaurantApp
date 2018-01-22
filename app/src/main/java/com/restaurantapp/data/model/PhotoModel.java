@@ -9,7 +9,7 @@ import android.arch.persistence.room.PrimaryKey;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
-import com.restaurantapp.data.api.response.Fields;
+import com.restaurantapp.data.api.response.ResponseFields;
 
 @Entity(tableName = "photos",
         indices = @Index(value = {RestaurantModel.RESTAURANT_ID}),
@@ -19,7 +19,7 @@ import com.restaurantapp.data.api.response.Fields;
                 childColumns = RestaurantModel.RESTAURANT_ID,
                 onDelete = ForeignKey.CASCADE
         ))
-public class PhotoModel implements Fields.PhotoFields {
+public class PhotoModel implements ResponseFields.PhotoFields {
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "_id")
     private long id;

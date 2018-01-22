@@ -187,7 +187,7 @@ public class MapFragment extends BaseFragment implements MapContract.View, OnMap
     public void addMarker(Restaurant restaurant) {
         Geometry.Location location = restaurant.getGeometry().getLocation();
         if (location != null) {
-            LatLng latLng= new LatLng(restaurant.getGeometry().getLocation().getLat(),
+            LatLng latLng = new LatLng(restaurant.getGeometry().getLocation().getLat(),
                     restaurant.getGeometry().getLocation().getLng());
             MarkerOptions markerOptions = new MarkerOptions().position(latLng)
                     .title(restaurant.getName())

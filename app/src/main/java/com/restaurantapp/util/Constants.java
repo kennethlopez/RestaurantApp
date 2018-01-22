@@ -4,7 +4,7 @@ package com.restaurantapp.util;
 public interface Constants {
     interface AppConstants {
         String SHARED_PREFERENCES = "com.restaurantapp.shared_preferences";
-        String PLACES_API_SERVICE_HOST = "https://maps.googleapis.com/maps/api/place/";
+        String MAPS_API_SERVICE_HOST = "https://maps.googleapis.com/maps/api/";
 
         // default nearby radius(km) used for google places nearbySearch api
         int DEFAULT_NEARBY_RADIUS = 1;
@@ -31,6 +31,10 @@ public interface Constants {
         String PREF_DISPLAYED_OVER_QUERY_LIMIT_DIALOG = "pref_displayed_over_query_limit_dialog";
         String PREF_FAVORITES = "pref_favorites";
         String PREF_MAP_ZOOM = "pref_map_zoom";
+    }
+
+    interface BundleKeys {
+        String KEY_PLACE_JSON = "KEY_PLACE_JSON";
     }
 
     interface Methods {

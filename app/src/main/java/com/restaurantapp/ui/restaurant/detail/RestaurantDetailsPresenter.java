@@ -7,6 +7,7 @@ import com.restaurantapp.R;
 import com.restaurantapp.data.api.response.Photo;
 import com.restaurantapp.data.api.response.Restaurant;
 import com.restaurantapp.data.event.EventError;
+import com.restaurantapp.data.event.EventOpenRestaurantOnMap;
 import com.restaurantapp.data.event.exception.OverQueryLimitException;
 import com.restaurantapp.data.repository.RestaurantRepository;
 import com.restaurantapp.injection.ConfigPersistent;
@@ -33,6 +34,7 @@ public class RestaurantDetailsPresenter extends BasePresenter<RestaurantDetailsC
 
     private RestaurantRepository mRestaurantRepository;
     private RxBus mBus;
+    private RxBus mApplicationWideBus;
 
     private Disposable mDisposable;
     private Restaurant mRestaurant;
@@ -92,7 +94,16 @@ public class RestaurantDetailsPresenter extends BasePresenter<RestaurantDetailsC
                 }
                 setFavorite();
                 break;
+            case R.id.menu_restaurant_details_map:
+                mApplicationWideBus.post(new EventOpenRestaurantOnMap(mRestaurant));
+                getView().closeActivity();
+                break;
         }
+    }
+
+    @Override
+    public void setApplicationWideBus(RxBus bus) {
+        mApplicationWideBus = bus;
     }
 
     @Override

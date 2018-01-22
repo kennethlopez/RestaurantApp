@@ -4,7 +4,7 @@ package com.restaurantapp.test.common.injection.module;
 import android.app.Application;
 import android.content.Context;
 
-import com.restaurantapp.data.api.PlacesApiService;
+import com.restaurantapp.data.api.MapsApiService;
 import com.restaurantapp.injection.ApplicationContext;
 import com.restaurantapp.util.LocationService;
 
@@ -51,8 +51,8 @@ public class AppTestModule {
 
     @Provides
     @Singleton
-    PlacesApiService providePlacesApiService() {
-        return mock(PlacesApiService.class);
+    MapsApiService providePlacesApiService() {
+        return mock(MapsApiService.class);
     }
 
     @Provides

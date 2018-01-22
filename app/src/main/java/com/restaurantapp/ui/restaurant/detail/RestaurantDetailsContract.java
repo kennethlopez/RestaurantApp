@@ -5,6 +5,7 @@ import com.restaurantapp.data.api.response.Photo;
 import com.restaurantapp.data.api.response.Restaurant;
 import com.restaurantapp.data.api.response.Review;
 import com.restaurantapp.ui.base.BaseView;
+import com.restaurantapp.util.RxBus;
 
 import java.util.List;
 
@@ -28,6 +29,8 @@ public interface RestaurantDetailsContract {
 
         void setFavoritesMenuItemTint(int colorResId);
 
+        void closeActivity();
+
         void showSnackBar(int messageResId);
 
         void showProgressBars();
@@ -43,5 +46,7 @@ public interface RestaurantDetailsContract {
         void setPlaceResponse(Restaurant restaurant, String apiKey);
 
         void optionsItemSelected(int itemId);
+
+        void setApplicationWideBus(RxBus bus);
     }
 }

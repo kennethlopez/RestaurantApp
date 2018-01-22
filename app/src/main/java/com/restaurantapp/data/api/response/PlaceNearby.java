@@ -6,7 +6,7 @@ import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
 
-public class PlaceNearby implements Fields {
+public class PlaceNearby implements ResponseFields, ResponseFields.PlaceFields {
     @SerializedName(NEXT_PAGE_TOKEN)
     @Expose
     private String nextPageToken;

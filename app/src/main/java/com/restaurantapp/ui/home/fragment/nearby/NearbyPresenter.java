@@ -182,9 +182,10 @@ public class NearbyPresenter extends BasePresenter<NearbyContract.View> implemen
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(placeNearby -> {
-                    mCurrentNextPageToken = placeNearby.getNextPageToken();
 
-                    setRestaurant(POSITION_TOP);
+                    mCurrentNextPageToken = placeNearby.getNextPageToken();
+                    if (isViewAttached()) setRestaurant(POSITION_TOP);
+
                 }, throwable -> handleThrowable(throwable, METHOD_SEARCH, POSITION_TOP));
     }
 

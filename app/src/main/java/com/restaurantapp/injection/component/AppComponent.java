@@ -5,7 +5,7 @@ import android.app.Application;
 import android.content.Context;
 
 import com.restaurantapp.data.AppDatabase;
-import com.restaurantapp.data.api.PlacesApiService;
+import com.restaurantapp.data.api.MapsApiService;
 import com.restaurantapp.data.repository.RestaurantRepository;
 import com.restaurantapp.injection.ApplicationContext;
 import com.restaurantapp.injection.module.AppModule;
@@ -33,7 +33,7 @@ public interface AppComponent {
 
     OkHttpClient.Builder okHttpClientBuilder();
 
-    PlacesApiService apiService();
+    MapsApiService apiService();
 
     LocationService locationService();
 

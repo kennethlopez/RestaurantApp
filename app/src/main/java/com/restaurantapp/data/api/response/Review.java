@@ -4,7 +4,7 @@ package com.restaurantapp.data.api.response;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class Review implements Fields.ReviewFields {
+public class Review implements ResponseFields.ReviewFields {
     @SerializedName(AUTHOR_NAME)
     @Expose
     private String authorName;

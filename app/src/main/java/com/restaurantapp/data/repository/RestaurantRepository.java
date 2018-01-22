@@ -2,12 +2,13 @@ package com.restaurantapp.data.repository;
 
 
 import android.arch.persistence.room.Transaction;
-import android.text.TextUtils;
 
+import com.google.android.gms.maps.model.LatLng;
 import com.restaurantapp.R;
 import com.restaurantapp.data.AppDatabase;
 import com.restaurantapp.data.Repository;
-import com.restaurantapp.data.api.PlacesApiService;
+import com.restaurantapp.data.api.MapsApiService;
+import com.restaurantapp.data.api.response.Directions;
 import com.restaurantapp.data.api.response.PlaceDetails;
 import com.restaurantapp.data.api.response.Restaurant;
 import com.restaurantapp.data.api.response.PlaceNearby;
@@ -19,6 +20,7 @@ import com.restaurantapp.data.model.ReviewModel;
 import com.restaurantapp.util.AppUtil;
 import com.restaurantapp.util.Constants;
 import com.restaurantapp.util.ConverterUtil;
+import com.restaurantapp.util.PolyUtil;
 import com.restaurantapp.util.RxBus;
 
 import java.util.ArrayList;
@@ -36,14 +38,14 @@ public class RestaurantRepository implements Repository<RestaurantModel>, Consta
     private AppDatabase.RestaurantDao mRestaurantDao;
     private AppDatabase.PhotoDao mPhotoDao;
     private AppDatabase.ReviewDao mReviewDao;
-    private PlacesApiService mApiService;
+    private MapsApiService mApiService;
     private RxBus mBus;
 
     private Restaurant mRestaurant;
     private List<Restaurant> mRestaurants = new ArrayList<>();
 
     @Inject
-    public RestaurantRepository(PlacesApiService apiService, AppDatabase.RestaurantDao restaurantDao,
+    public RestaurantRepository(MapsApiService apiService, AppDatabase.RestaurantDao restaurantDao,
                                 AppDatabase.PhotoDao photoDao, AppDatabase.ReviewDao reviewDao, RxBus bus) {
         mRestaurantDao = restaurantDao;
         mPhotoDao = photoDao;
@@ -136,6 +138,20 @@ public class RestaurantRepository implements Repository<RestaurantModel>, Consta
                     List<ReviewModel> reviewModels = mReviewDao.getReviews(restaurantModel.getId());
                     return ConverterUtil.fromRestaurantModel(restaurantModel, photoModels,
                             reviewModels);
+                });
+    }
+
+    public Single<List<LatLng>> getPolyLines(String originLatLng, String destinationPlaceId,
+                                             String key) {
+        String placeId = "place_id:" + destinationPlaceId;
+        return mApiService.directions(originLatLng, placeId, key)
+                .map(directions -> {
+                    throwOnOverQueryLimit(directions.getStatus());
+
+                    return PolyUtil.decode(directions.getRoutes()
+                            .get(0)
+                            .getOverViewPolyLine()
+                            .getPoints());
                 });
     }
 

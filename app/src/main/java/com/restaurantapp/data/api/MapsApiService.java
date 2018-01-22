@@ -1,6 +1,7 @@
 package com.restaurantapp.data.api;
 
 
+import com.restaurantapp.data.api.response.Directions;
 import com.restaurantapp.data.api.response.PlaceDetails;
 import com.restaurantapp.data.api.response.PlaceNearby;
 
@@ -9,8 +10,8 @@ import io.reactivex.Single;
 import retrofit2.http.GET;
 import retrofit2.http.Query;
 
-public interface PlacesApiService {
-    @GET("nearbysearch/json")
+public interface MapsApiService {
+    @GET("place/nearbysearch/json")
     Single<PlaceNearby> nearbySearch(
             @Query("location") String location,
             @Query("radius") int radius,
@@ -18,7 +19,7 @@ public interface PlacesApiService {
             @Query("key") String key
     );
 
-    @GET("nearbysearch/json")
+    @GET("place/nearbysearch/json")
     Single<PlaceNearby> nearbySearch(
             @Query("location") String location,
             @Query("radius") int radius,
@@ -27,7 +28,7 @@ public interface PlacesApiService {
             @Query("keyword") String keyword
     );
 
-    @GET("nearbysearch/json")
+    @GET("place/nearbysearch/json")
     Single<PlaceNearby> nearbySearchWithToken(
             @Query("location") String location,
             @Query("radius") int radius,
@@ -36,7 +37,7 @@ public interface PlacesApiService {
             @Query("pagetoken") String pageToken
     );
 
-    @GET("nearbysearch/json")
+    @GET("place/nearbysearch/json")
     Single<PlaceNearby> nearbySearchWithToken(
             @Query("location") String location,
             @Query("radius") int radius,
@@ -46,9 +47,16 @@ public interface PlacesApiService {
             @Query("pagetoken") String pageToken
     );
 
-    @GET("details/json")
+    @GET("place/details/json")
     Single<PlaceDetails> details(
             @Query("placeid") String placeId,
             @Query("key") String key
+    );
+
+    @GET("directions/json")
+    Single<Directions> directions(
+        @Query("origin") String originLatLng,
+        @Query("destination") String destinationPlaceId,
+        @Query("key") String key
     );
 }

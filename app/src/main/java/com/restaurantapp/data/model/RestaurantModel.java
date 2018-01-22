@@ -7,13 +7,13 @@ import android.arch.persistence.room.PrimaryKey;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
-import com.restaurantapp.data.api.response.Fields;
+import com.restaurantapp.data.api.response.ResponseFields;
 
 
 @Entity(tableName = "restaurants",
         indices = @Index(value = {RestaurantModel.PLACE_ID},
         unique = true))
-public class RestaurantModel implements Fields.RestaurantFields, Fields.LocationFields {
+public class RestaurantModel implements ResponseFields.RestaurantFields, ResponseFields.LocationFields {
     static final String ID = "_id";
     static final String RESTAURANT_ID = "_restaurant_id";
     public static final String PLACE_ID = "place_id";
@@ -32,7 +32,7 @@ public class RestaurantModel implements Fields.RestaurantFields, Fields.Location
     @ColumnInfo(name = "lng")
     private double lng;
 
-    @SerializedName(Fields.RestaurantFields.PLACE_ID)
+    @SerializedName(ResponseFields.RestaurantFields.PLACE_ID)
     @Expose
     @ColumnInfo(name = PLACE_ID)
     private String placeId;

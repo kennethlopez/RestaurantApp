@@ -6,7 +6,7 @@ import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
 
-public class Restaurant implements Fields.RestaurantFields {
+public class Restaurant implements ResponseFields.RestaurantFields {
     @SerializedName(FORMATTED_ADDRESS)
     @Expose
     private String formattedAddress;

@@ -4,7 +4,7 @@ package com.restaurantapp.data.api.response;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class Photo implements Fields.PhotoFields {
+public class Photo implements ResponseFields.PhotoFields {
     @SerializedName(HEIGHT)
     @Expose
     private int height;

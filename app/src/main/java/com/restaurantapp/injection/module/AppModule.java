@@ -11,7 +11,7 @@ import com.restaurantapp.BuildConfig;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.restaurantapp.App;
-import com.restaurantapp.data.api.PlacesApiService;
+import com.restaurantapp.data.api.MapsApiService;
 import com.restaurantapp.injection.ApplicationContext;
 import com.restaurantapp.util.Constants;
 import com.restaurantapp.util.LocationService;
@@ -118,14 +118,14 @@ public class AppModule {
 
     @Provides
     @Singleton
-    PlacesApiService provideApiService(OkHttpClient.Builder okHttpClientBuilder, Gson gson) {
+    MapsApiService provideApiService(OkHttpClient.Builder okHttpClientBuilder, Gson gson) {
         return new Retrofit.Builder()
                 .client(okHttpClientBuilder.build())
-                .baseUrl(Constants.AppConstants.PLACES_API_SERVICE_HOST)
+                .baseUrl(Constants.AppConstants.MAPS_API_SERVICE_HOST)
                 .addConverterFactory(GsonConverterFactory.create(gson))
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 .build()
-                .create(PlacesApiService.class);
+                .create(MapsApiService.class);
     }
 
     @Provides

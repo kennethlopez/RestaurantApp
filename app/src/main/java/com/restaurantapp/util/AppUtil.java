@@ -32,7 +32,7 @@ public final class AppUtil {
 
     public static String getGooglePhotosLink(String reference, int maxWidth, int maxHeight,
                                              String apiKey) {
-        return Constants.AppConstants.PLACES_API_SERVICE_HOST + "photo?maxwidth=" + maxWidth
+        return Constants.AppConstants.MAPS_API_SERVICE_HOST + "place/photo?maxwidth=" + maxWidth
                 + "&maxheight=" + maxHeight + "&photoreference=" + reference +
                 "&key=" + apiKey;
     }

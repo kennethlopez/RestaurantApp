@@ -1,11 +1,15 @@
 package com.restaurantapp.data.api.response;
 
 
-public interface Fields {
-    String RESULT = "result";
-    String RESULTS = "results";
-    String NEXT_PAGE_TOKEN = "next_page_token";
+public interface ResponseFields {
+
     String STATUS = "status";
+
+    interface PlaceFields {
+        String RESULT = "result";
+        String RESULTS = "results";
+        String NEXT_PAGE_TOKEN = "next_page_token";
+    }
 
     interface GeometryFields {
         String LOCATION = "location";
@@ -45,5 +49,17 @@ public interface Fields {
         String RELATIVE_TIME_DESCRIPTION = "relative_time_description";
         String TEXT = "text";
         String TIME = "time";
+    }
+
+    interface DirectionsFields {
+        String ROUTES = "routes";
+    }
+
+    interface RouteFields {
+        String OVERVIEW_POLYLINE = "overview_polyline";
+    }
+
+    interface OverViewPolyLineFields {
+        String POINTS = "points";
     }
 }

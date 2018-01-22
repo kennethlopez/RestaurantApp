@@ -11,8 +11,10 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
 
 import com.restaurantapp.R;
+import com.restaurantapp.data.api.response.Restaurant;
 import com.restaurantapp.ui.base.BaseActivity;
 import com.restaurantapp.data.event.EventTurnOnLocation;
+import com.restaurantapp.ui.home.fragment.mapsinglerestaurant.MapSingleRestaurantFragment;
 import com.restaurantapp.util.AppUtil;
 import com.restaurantapp.util.RxBus;
 import com.restaurantapp.ui.home.fragment.favorites.FavoritesFragment;
@@ -36,6 +38,7 @@ public class HomeActivity extends BaseActivity implements HomeContract.View {
     private TastesFragment mTastesFragment;
     private FavoritesFragment mFavoritesFragment;
     private MapFragment mMapFragment;
+    private MapSingleRestaurantFragment mMapSingleRestaurantFragment;
 
     private Handler mHandler = new Handler();
     private FragmentManager mFragmentManager;
@@ -51,6 +54,7 @@ public class HomeActivity extends BaseActivity implements HomeContract.View {
         mFragmentManager = getSupportFragmentManager();
 
         mPresenter.attachView(this);
+        mPresenter.setApplicationWideBus(mBus);
         super.attachPresenter(mPresenter);
     }
 
@@ -117,6 +121,19 @@ public class HomeActivity extends BaseActivity implements HomeContract.View {
         if (mMapFragment == null) mMapFragment = MapFragment.newInstance();
 
         AppUtil.loadFragmentFadeIn(fragmentId, mHandler, mFragmentManager, mMapFragment, tag);
+        mBottomNav.setSelectedItemId(R.id.menu_bottom_nav_map);
+    }
+
+    @Override
+    public void loadMapFragment(int fragmentId, String tag, Restaurant restaurant) {
+        if (mMapSingleRestaurantFragment == null) {
+            mMapSingleRestaurantFragment = MapSingleRestaurantFragment.newInstance(restaurant);
+        } else {
+            Bundle args = MapSingleRestaurantFragment.createArguments(restaurant);
+            mMapSingleRestaurantFragment.setArguments(args);
+        }
+
+        AppUtil.loadFragmentFadeIn(fragmentId, mHandler, mFragmentManager, mMapSingleRestaurantFragment, tag);
         mBottomNav.setSelectedItemId(R.id.menu_bottom_nav_map);
     }
 
